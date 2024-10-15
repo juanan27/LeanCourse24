@@ -49,7 +49,7 @@ your proof is finished.
 -/
 
 example (a b : ℝ) : (a+b)^2 = a^2 + 2*a*b + b^2 := by {
-  sorry
+  ring
   }
 
 /- In the first example above, take a closer look at where Lean displays parentheses.
@@ -99,7 +99,9 @@ but it doesn't use the assumptions `h` and `h'`
 -/
 
 example (a b c d : ℝ) (h : b = d + d) (h' : a = b + c) : a + b = c + 4 * d := by {
-  sorry
+  rw [h,h']
+  rw [h]
+  ring
   }
 
 /- ## Rewriting with a lemma
@@ -138,7 +140,13 @@ right-hand side.
 -/
 
 example (a b c : ℝ) : exp (a + b - c) = (exp a * exp b) / (exp c * exp 0) := by {
-  sorry
+  rw [exp_sub (a+b) c]
+  rw [exp_zero]
+  rw [mul_one]
+  rw [exp_add]
+  -- calc exp (a + b - c) = exp (a + b) / exp c := by rw [exp_sub]
+  --_ = exp a * exp b / exp c := by rw [exp_add]
+  -- _ = exp a
   }
 
 
@@ -149,7 +157,8 @@ The two lemmas below express the associativity and commutativity of multiplicati
 #check (mul_comm : ∀ a b : ℝ, a * b = b * a)
 
 example (a b c : ℝ) : a * b * c = b * (a * c) := by {
-  sorry
+  rw[mul_comm a b,mul_assoc]
+  --ring
   }
 
 
@@ -173,7 +182,9 @@ variable {G : Type*} [Group G] (g h : G)
 #check inv_inv g
 
 lemma inverse_of_a_commutator : ⁅g, h⁆⁻¹ = ⁅h, g⁆ := by {
-  sorry
+  rw[commutatorElement_def, commutatorElement_def]
+  simp_rw[mul_inv_rev, inv_inv]
+  simp_rw[← mul_assoc]
   }
 
 end
@@ -184,7 +195,7 @@ end
 Since equality is a symmetric relation, we can also replace the right-hand side of an
 equality by the left-hand side using `←` as in the following example.
 -/
-example (a b c : ℝ) (h : a = b + c) (h' : a + e = d + c) : b + c + e = d + c := by {
+example (a b c e d : ℝ) (h : a = b + c) (h' : a + e = d + c) : b + c + e = d + c := by {
   rw [← h, h']
   }
 
@@ -199,11 +210,11 @@ by the left-hand side, so it will look for `b + c` in the current goal and repla
 -/
 
 example (a b c d : ℝ) (h : a = b + b) (h' : b = c) (h'' : a = d) : b + c = d := by {
-  sorry
+  rw [← h', ← h, h'']
   }
 
 example (a b c d : ℝ) (h : a*d - 1 = c) (h' : a*d = b) : c = b - 1 := by {
-  sorry
+  rw [← h, ← h']
   }
 
 /- ## Rewriting in a local assumption
@@ -245,10 +256,10 @@ Let's do some exercises using `calc`. Feel free to use `ring` in some steps.
 
 example (a b c : ℝ) (h : a = b + c) : exp (2 * a) = (exp b) ^ 2 * (exp c) ^ 2 := by {
   calc
-    exp (2 * a) = exp (2 * (b + c))                 := by sorry
-              _ = exp ((b + b) + (c + c))           := by sorry
-              _ = exp (b + b) * exp (c + c)         := by sorry
-              _ = (exp b * exp b) * (exp c * exp c) := by sorry
+    exp (2 * a) = exp (2 * (b + c))                 := by rw [h]
+              _ = exp ((b + b) + (c + c))           := by ring
+              _ = exp (b + b) * exp (c + c)         := by rw [exp_add]
+              _ = (exp b * exp b) * (exp c * exp c) := by simp_rw [exp_add]
               _ = (exp b) ^ 2 * (exp c)^2           := by sorry
   }
 
