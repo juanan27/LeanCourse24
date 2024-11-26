@@ -12,7 +12,7 @@ noncomputable section
 # Practical remarks
 * To get the latest version of this repository, run `git pull` on the command line.
   See `README` for precise instructions.
-* The first assignment due 22.10.2023. Upload it to eCampus.
+* The first assignment due 22.10.2024. Upload it to eCampus.
 
 **Two optional activities**
 * There is a weekly Lean hacking session Wednesdays 18 - 20 c.t. in seminar room 0.011.
@@ -111,7 +111,11 @@ example (p q r s : Prop) (hq : p → s → q) (hr : q → r) : s → p → r := 
 
 /- We can also use `exact` or `refine` with more complicated proof terms. -/
 example (p q r : Prop) (hq : p → p → q) (hr : q → r) : p → r := by {
-  sorry
+  intro hp
+  have h2 : p → q := hq hp
+  specialize h2 hp
+  specialize hr h2
+  assumption
   }
 
 

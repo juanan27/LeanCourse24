@@ -146,7 +146,9 @@ example {α : Type*} {p : α → Prop} : ¬ (∃ x, p x) ↔ ∀ x, ¬ p x := by
     use x
   · intro h h2
     obtain ⟨x, hx⟩ := h2
-    exact h x hx
+    specialize h x
+    exact h hx
+    --or just exact h x hx instead of the two earlier lines
   }
 
 
@@ -197,8 +199,14 @@ example {α : Type*} {p : α → α → Prop} :
   push_neg
   rfl
 
+#leansearch "Ax's Theorem: Every Inyective polynomial is also surjective in a complex vector space."
+#leansearch "hyperreal."
+#leansearch "ultraproduct."
+#leansearch "Ramsey's theorem."
+#leansearch "Amenable."
+#leansearch "Markov-Kakutani fixed point."
 
-
+-- #check ax_grothendieck_
 /-- The sequence `u` of real numbers converges to `l`.
 `∀ ε > 0, ...` means `∀ ε, ε > 0 → ...` -/
 def SequentialLimit (u : ℕ → ℝ) (l : ℝ) : Prop :=
@@ -323,7 +331,7 @@ example : s ∩ t ⊆ s ∩ (t ∪ u) := by {
     assumption
   }
 
-/- you can also prove it at thge level of sets, without talking about elements. -/
+/- you can also prove it at the level of sets, without talking about elements. -/
 example : s ∩ t ⊆ s ∩ (t ∪ u) := by {
   gcongr
   exact subset_union_left

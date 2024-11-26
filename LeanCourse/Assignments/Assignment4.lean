@@ -96,7 +96,26 @@ produces a sequence that converges to the same value. -/
 lemma sequentialLimit_reindex {s : ℕ → ℝ} {r : ℕ → ℕ} {a : ℝ}
     (hs : SequentialLimit s a) (hr : ∀ m : ℕ, ∃ N : ℕ, ∀ n ≥ N, r n ≥ m) :
     SequentialLimit (s ∘ r) a := by {
-  sorry
+    unfold SequentialLimit at *
+    intro ε hε
+    specialize hs ε
+    have h1 : ∃ N, ∀ n ≥ N, |s n - a| < ε := by exact hs hε
+    obtain ⟨N₀, hN₀⟩ := h1
+    specialize hr N₀
+    obtain ⟨N₁, hN₁⟩ := hr
+    let N₂ := max N₀ N₁
+    use N₂
+    intro n hn
+    have h2 : n ≥ N₁ := by exact le_of_max_le_right hn -- from this point, tauto already closes the goal
+    --have h3 : n ≥ N₀ := by exact le_of_max_le_left hn
+    --specialize hN₁ n
+    --have h4 : r n ≥ N₀ := by exact hN₁ h2
+    --simp
+    --let k := r n
+    --specialize hN₀ k
+    --have hk : k ≥ N₀ := by trivial
+    --have h5 : |s k - a| < ε := by exact hN₀ (hN₁ h2)
+    tauto
   }
 
 
@@ -107,7 +126,37 @@ lemma sequentialLimit_squeeze {s₁ s₂ s₃ : ℕ → ℝ} {a : ℝ}
     (hs₁ : SequentialLimit s₁ a) (hs₃ : SequentialLimit s₃ a)
     (hs₁s₂ : ∀ n, s₁ n ≤ s₂ n) (hs₂s₃ : ∀ n, s₂ n ≤ s₃ n) :
     SequentialLimit s₂ a := by {
-  sorry
+  unfold SequentialLimit at *
+  simp at *
+  intro ε hε
+  specialize hs₁ ε
+  specialize hs₃ ε
+  have h1 : ∃ N, ∀ (n : ℕ), N ≤ n → |s₁ n - a| < ε := by exact hs₁ hε
+  have h3 : ∃ N, ∀ (n : ℕ), N ≤ n → |s₃ n - a| < ε := by exact hs₃ hε
+  obtain ⟨N₁, hN₁⟩ := h1
+  obtain ⟨N₃, hN₃⟩ := h3
+  let N₂ := max N₁ N₃
+  use N₂
+  intro n hn
+  rw[abs_lt] -- we use the lemma given as hint
+  specialize hN₁ n
+  specialize hN₃ n
+  have hmax1 : N₁ ≤ n := by exact le_of_max_le_left hn
+  have hmax3 : N₃ ≤ n := by exact le_of_max_le_right hn
+  have hyp1 : |s₁ n - a| < ε := by exact hN₁ hmax1
+  rw[abs_lt] at hyp1
+  have hyp3 : |s₃ n - a| < ε := by exact hN₃ hmax3
+  rw[abs_lt] at hyp3
+  obtain ⟨h1P, h1Q⟩ := hyp1
+  obtain ⟨h3P, h3Q⟩ := hyp3
+  constructor
+  have h' : -ε < s₁ n - a := by exact h1P
+  have h'' : s₁ n - a ≤ s₂ n - a := by exact tsub_le_tsub_right (hs₁s₂ n) a
+  have h''': -ε < s₂ n - a := by exact gt_of_ge_of_gt h'' h1P
+  assumption
+  calc s₂ n - a ≤ s₃ n - a := by exact tsub_le_tsub_right (hs₂s₃ n) a
+  _ < ε := by exact h3Q
+
   }
 
 /- ## Sets -/
@@ -115,13 +164,88 @@ lemma sequentialLimit_squeeze {s₁ s₂ s₃ : ℕ → ℝ} {a : ℝ}
 /- Prove this without using lemmas from Mathlib. -/
 lemma image_and_intersection {α β : Type*} (f : α → β) (s : Set α) (t : Set β) :
     f '' s ∩ t = f '' (s ∩ f ⁻¹' t) := by {
-  sorry
+  ext x
+  constructor
+  intro h
+  simp at *
+  obtain ⟨hP, hQ⟩ := h
+  obtain ⟨x1, hx1⟩ := hP
+  obtain ⟨hx1P, hx1Q⟩ := hx1
+  use x1
+  constructor
+  constructor
+  tauto
+  rw[hx1Q]
+  tauto
+  tauto
+  intro hyp
+  simp at *
+  obtain ⟨x₁, hx₁⟩ := hyp
+  obtain ⟨hypP, hypQ⟩ := hx₁
+  obtain ⟨hypP₁, hypP₂⟩ := hypP
+  constructor
+  use x₁
+  rw[← hypQ]
+  exact hypP₂
   }
 
 /- Prove this by finding relevant lemmas in Mathlib. -/
+
 lemma preimage_square :
     (fun x : ℝ ↦ x ^ 2) ⁻¹' {y | y ≥ 16} = { x : ℝ | x ≤ -4 } ∪ { x : ℝ | x ≥ 4 } := by {
-  sorry
+  ext z
+  constructor
+  simp at *
+  intro h
+  by_cases h1 : z > 0
+  right
+  by_contra hyp
+  simp at hyp
+  have hyp' : z^2 < 4^2 := by {
+    refine sq_lt_sq' ?h1 hyp
+    linarith
+  }
+  linarith
+  left
+  simp at *
+  have h' : 4^2 ≤ z^2 := by linarith
+  by_contra hyp
+  simp at hyp
+  have hyp' : z^2 < (-4) ^ 2 := by {
+  rw[sq_lt_sq]
+  have hyp' : -z < 4 := by linarith
+  have hb : |z| = -z := by exact abs_of_nonpos h1
+  simp
+  rw[hb]
+  assumption
+  }
+  linarith
+  intro h
+  obtain hP|hQ := h
+  by_contra h
+  simp at *
+  have hyp' : 4 ≤ -z := by linarith
+  have h0 : z < 0 := by linarith
+  have h1 : |z| = -z := by exact abs_of_neg h0
+  have h2 : 4^2 ≤ (-z)^2 := by {
+  rw[sq_le_sq]
+  simp
+  rw[h1]
+  exact hyp'
+  }
+  have h' : (-z)^2 = z^2 := by exact neg_pow_two z
+  rw[h'] at h2
+  linarith
+  simp at *
+  have h0 : z > 0 := by linarith
+  have hz : |z| = z := by exact abs_of_pos h0
+  have hyp : 4^2 ≤ z^2 := by {
+    refine sq_le_sq.mpr ?_
+    simp
+    rw[hz]
+    assumption
+    }
+  linarith
   }
 
 
@@ -130,9 +254,38 @@ lemma preimage_square :
 Now prove the following example, mimicking the proof from the lecture.
 If you want, you can define `g` separately first.
 -/
+open Classical
+
+def conditionalInverse (y : β)
+  (h : ∃ x : α, f x = y) : α :=
+  Classical.choose h
+
+lemma invFun_spec (y : β) (h : ∃ x, f x = y) :
+    f (conditionalInverse f y h) = y :=
+  Classical.choose_spec h
+
+/- We can now define the function by cases
+on whether it lies in the range of `f` or not. -/
+
+variable [Inhabited α]
+def inverse (f : α → β) (y : β) : α :=
+  if h : ∃ x : α, f x = y then
+    conditionalInverse f y h else default
 lemma inverse_on_a_set [Inhabited α] (hf : InjOn f s) : ∃ g : β → α, LeftInvOn g f s := by {
-  sorry
+use inverse f
+unfold LeftInvOn
+intro x hx
+unfold InjOn at *
+apply hf
+simp [inverse]
+unfold conditionalInverse
+
+
   }
+
+
+
+
 
 
 /- Let's prove that if `f : α → γ` and `g : β → γ` are injective function whose
@@ -147,10 +300,95 @@ lemma set_bijection_of_partition {f : α → γ} {g : β → γ} (hf : Injective
     (h1 : range f ∩ range g = ∅) (h2 : range f ∪ range g = univ) :
     ∃ (L : Set α × Set β → Set γ) (R : Set γ → Set α × Set β), L ∘ R = id ∧ R ∘ L = id := by {
   -- h1' and h1'' might be useful later as arguments of `simp` to simplify your goal.
-  have h1' : ∀ x y, f x ≠ g y := by sorry
-  have h1'' : ∀ y x, g y ≠ f x := by sorry
-  have h2' : ∀ x, x ∈ range f ∪ range g := by sorry
-  let L : Set α × Set β → Set γ := sorry
-  let R : Set γ → Set α × Set β := sorry
-  sorry
+  have h1' : ∀ x y, f x ≠ g y := by {
+  by_contra h
+  push_neg at h
+  obtain ⟨x, y, hxy⟩ := h
+
+  have hx : f x ∈ range f := by exact mem_range_self x
+  have hxg : g y ∈ range g := by exact mem_range_self y
+  have hxfg : f x ∈ range g := by rw[← hxy] at hxg; exact hxg
+  have hxr : f x ∈ range f ∩ range g := by exact mem_inter hx hxfg
+  rw[h1] at hxr
+  contradiction
+  }
+  have h1'' : ∀ y x, g y ≠ f x := by exact fun y x a ↦ h1' x y (id (Eq.symm a))
+  have h2' : ∀ x, x ∈ range f ∪ range g := by {
+    intro x
+    rw[h2]
+    trivial
+  }
+  let L : Set α × Set β → Set γ := fun (x, y) ↦ (f '' x) ∪ (g '' y)
+  let R : Set γ → Set α × Set β := fun x ↦ (f ⁻¹' (x), g ⁻¹' (x))
+
+  use L, R
+  constructor
+  · ext X y
+    unfold L R
+    constructor
+    · intro h
+      simp at h
+      simp only [id_eq]
+      obtain hl|hr := h
+      · obtain ⟨x₀, hx₀, hxy₀⟩ := hl
+        rw[hxy₀] at hx₀
+        exact hx₀
+      · obtain ⟨x₀, hx₀, hxy₀⟩ := hr
+        rw[hxy₀] at hx₀
+        exact hx₀
+    · intro h
+      simp
+      simp[id_eq] at h
+      have h' : (∃ x, f x = y) ∨ (∃ x, g x = y) := by exact h2' y
+      obtain h'l|h'r := h'
+      · left
+        obtain ⟨x, hx⟩ := h'l
+        use x
+        rw[← hx] at h
+        trivial
+      · right
+        obtain ⟨x, hx⟩ := h'r
+        use x
+        rw[← hx] at h
+        trivial
+  · unfold R L
+    ext x y
+    · simp
+      constructor
+      intro h
+      obtain hL|hR := h
+      · obtain ⟨z, hz1, hz2⟩ := hL
+        apply hf at hz2
+        rw[hz2] at hz1
+        exact hz1
+      · obtain ⟨z, hz1, hz2⟩ := hR
+        exfalso
+        have hx : f y ∈ range f := by exact mem_range_self y
+        have hxg : g z ∈ range g := by exact mem_range_self z
+        have hxfg : f y ∈ range g := by rw[hz2] at hxg; exact hxg
+        have hxr : f y ∈ range f ∩ range g := by exact mem_inter hx hxfg
+        rw[h1] at hxr
+        contradiction
+      · intro h
+        · left
+          use y
+    · simp
+      constructor
+      · intro h
+        obtain hL|hR := h
+        · obtain ⟨x₁, hx₁, h'x₁⟩ := hL
+          exfalso
+          have hx : f x₁ ∈ range f := by exact mem_range_self x₁
+          have hxg : g y ∈ range g := by exact mem_range_self y
+          have hxfg : f x₁ ∈ range g := by rw[← h'x₁] at hxg; exact hxg
+          have hxr : f x₁ ∈ range f ∩ range g := by exact mem_inter hx hxfg
+          rw[h1] at hxr
+          contradiction
+        · obtain ⟨x₁, hx₁, h'x₁⟩ := hR
+          apply hg at h'x₁
+          rw[← h'x₁]
+          exact hx₁
+      · intro h
+        · right
+          use y
   }

@@ -92,7 +92,9 @@ example (𝓒 : Set (Set α)) :
 
 example (C : ι → Set α) (s : Set α) :
     s ∩ (⋃ i, C i) = ⋃ i, (C i ∩ s) := by {
-  sorry
+  ext x
+  simp
+  rw[and_comm]
   }
 
 /- We can take images and preimages of sets.
@@ -112,7 +114,15 @@ example (f : α → β) (s : Set α) : f '' s = { y : β | ∃ x ∈ s, f x = y 
 
 
 example {s : Set α} {t : Set β} {f : α → β} : f '' s ⊆ t ↔ s ⊆ f ⁻¹' t := by {
-  sorry
+  constructor
+  · intro h
+    intro x hx
+    simp
+    apply h
+    -- exact mem_image_of_mem f hx
+    simp
+    use x
+  intro hy y
   }
 
 
@@ -125,7 +135,12 @@ example (s t : Set ℝ) :
 example (s t : Set ℝ) : -s = {x : ℝ | -x ∈ s } := by rfl
 
 example : ({1, 3, 5} : Set ℝ) + {0, 10} = {1, 3, 5, 11, 13, 15} := by {
-  sorry
+  ext x
+  simp[@mem_add]
+  norm_num -- or ring
+  tauto
+
+
   }
 
 

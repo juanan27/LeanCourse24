@@ -193,7 +193,22 @@ Then state and prove the lemma that for any element of a strict bipointed type w
 open Finset in
 lemma sum_cube_eq_sq_sum (n : ℕ) :
     (∑ i in range (n + 1), (i : ℚ) ^ 3) = (∑ i in range (n + 1), (i : ℚ)) ^ 2 := by {
-  sorry
+  induction n with
+  | zero =>
+  norm_num
+  | succ n ih =>
+  rw[Finset.sum_range_succ, ih]
+  have hyp : ↑(n + 1) ^ 3 = 2 * ∑ i in range (n + 1), (i : ℚ) * (n + 1) := by{
+    have h : ∑ i in range (n + 1), (i : ℚ) = n * (n + 1) / 2 := by {
+  induction n with
+  | zero => simp
+  | succ n ik =>
+    rw [Finset.sum_range_succ, ik]
+    field_simp
+    ring
+  }
+
+  }
   }
 
 /-
