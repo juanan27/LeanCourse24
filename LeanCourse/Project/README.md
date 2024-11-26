@@ -2,9 +2,9 @@
 
 Please fill out the following. Fill in the project topic once you have decided.
 ```
-First & last name:
-Project topic:
-Partner (optional):
+First & last name: Juan Antonio Montalban Vidal
+Project topic: Winding nunmber of a closed curve
+Partner (optional): Jorge Carrasco Coquillat
 ```
 
 ## Your own project

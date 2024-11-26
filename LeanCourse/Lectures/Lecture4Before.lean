@@ -89,7 +89,7 @@ example (𝓒 : Set (Set α)) :
 example (𝓒 : Set (Set α)) :
     ⋂₀ 𝓒 = {x : α | ∀ s ∈ 𝓒, x ∈ s} := by ext; simp
 
-
+-- to prove two sets are equal one might use the extensionality tactic
 example (C : ι → Set α) (s : Set α) :
     s ∩ (⋃ i, C i) = ⋃ i, (C i ∩ s) := by {
   sorry
@@ -125,7 +125,12 @@ example (s t : Set ℝ) :
 example (s t : Set ℝ) : -s = {x : ℝ | -x ∈ s } := by rfl
 
 example : ({1, 3, 5} : Set ℝ) + {0, 10} = {1, 3, 5, 11, 13, 15} := by {
-  sorry
+  ext x
+  simp
+  simp [@mem_add]
+  norm_num 
+  tauto
+
   }
 
 
@@ -183,18 +188,34 @@ and a left-inverse if `f` is injective.
 We use the `ext` tactic to show that two functions are equal. -/
 lemma rightInv_of_surjective (hf : Surjective f) :
     f ∘ inverse f = id := by {
-  sorry
+  ext y
+  simp
+  unfold Surjective at hf
+  obtain ⟨x, hx⟩ := hf y
+  subst y
+  simp [inverse]
+  rw [invFun_spec f]
   }
 
 lemma leftInv_of_surjective (hf : Injective f) :
     inverse f ∘ f = id := by {
-  sorry
+  ext x
+  simp
+  apply hf
+  simp [inverse, invFun_spec]
   }
 
 /- We can package this together in one statement. -/
 lemma inv_of_bijective (hf : Bijective f) :
     ∃ g : β → α, f ∘ g = id ∧ g ∘ f = id := by {
-  sorry
+  let g : β → α := inverse f
+  use g
+  constructor 
+  · apply rightInv_of_surjective
+    exact Bijective.surjective hf
+  · apply leftInv_of_injective 
+    exact Bijective.injective hf
+
   }
 
 end Inverse

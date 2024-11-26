@@ -314,10 +314,28 @@ lemma not_prime_iff (n : ℕ) :
       push_neg at h
       have h1 := h $ by linarith
       obtain ⟨m, h2, h3, h4⟩ := h1
-      let x := (n + 2) / m
+      have hm : m ≠ 0 := by{
+      simp
+      by_contra hmm
+      rw [hmm] at h3
+      omega
+      }
+      have hm2 : 2 ≤ m := by {
+          cases m with
+          | zero => contradiction
+          |  succ m =>
+            cases m with
+            | zero => contradiction
+            | succ m => linarith
+        }
       use m
-      sorry
-
+      constructor
+      · exact hm2
+      · obtain ⟨m', hm'⟩ := h3
+        use m'
+        constructor
+        · nlinarith
+        · exact hm'
     }
 
   · intro h
@@ -344,24 +362,40 @@ lemma prime_of_prime_two_pow_sub_one (n : ℕ) (hn : Nat.Prime (2 ^ n - 1)) : Na
     calc (2 : ℤ) ^ (a * b) - 1
         ≡ ((2 : ℤ) ^ a) ^ b - 1 [ZMOD (2 : ℤ) ^ a - 1] := by ring; trivial
       _ ≡ (1 : ℤ) ^ b - 1 [ZMOD (2 : ℤ) ^ a - 1] := by {
-        have h : (2 ^ a) ^ b ≡ 1 [ZMOD (2 : ℤ) ^ a - 1] := by sorry
-        simp
-        sorry
+        have h : (2 : ℤ) ^ a  ≡ 1 [ZMOD (2 : ℤ) ^ a - 1] := by exact Int.modEq_sub (2 ^ a) 1
+        have h_pow := Int.ModEq.pow b h
+        exact Int.ModEq.sub h_pow rfl
       }
       _ ≡ 0 [ZMOD (2 : ℤ) ^ a - 1] := by ring; rfl
-  have h2 : 2 ^ 2 ≤ 2 ^ a := by rw [propext (Nat.pow_le_pow_iff_right le.refl)]; exact ha
+  have h2  : 2 ^ 2 ≤ 2 ^ a := by rw [propext (Nat.pow_le_pow_iff_right le.refl)]; exact ha
   have h3 : 1 ≤ 2 ^ a := by exact Nat.one_le_two_pow
   have h4 : 2 ^ a - 1 ≠ 1 := by zify; simp [h3]; linarith
   have h5 : 2 ^ a - 1 < 2 ^ (a * b) - 1 := by
     apply tsub_lt_tsub_right_of_le h3
     have haa : 0 < a := by linarith
-    sorry
+    have hbb : 0 < b := by linarith
+    refine (Nat.pow_lt_pow_iff_right ?_).mpr ?_
+    · nlinarith
+    · nlinarith
   have h6' : 2 ^ 0 ≤ 2 ^ (a * b) := by simp; exact Nat.one_le_two_pow
   have h6 : 1 ≤ 2 ^ (a * b) := h6'
   have h' : 2 ^ a - 1 ∣ 2 ^ (a * b) - 1 := by norm_cast at h
   rw [Nat.prime_def_lt] at hn
   simp at *
-  sorry
+  have hgt_one : 1 < 2 ^ a - 1 := by {
+    have hh : 2 < 2 ^ a := by nlinarith
+    have hhh : 1 < 2 ^ a - 1 := by {
+    have hhhh : 4 ≤ 2 ^ a := by nlinarith
+    have h₁ : 3 ≤ 2 ^ a - 1 := by exact (Nat.le_sub_one_iff_lt h3).mpr h2
+    linarith
+    }
+    exact hhh
+  }
+  have prime_cond := hn.2
+  have h' : (2 ^ a - 1 : ℕ) ∣ 2 ^ (a * b) - 1 := by
+    norm_cast at h
+  specialize prime_cond ((2 : ℕ) ^ a - 1) h5 h'
+  nlinarith
   }
 
 /- Prove that for positive `a` and `b`, `a^2 + b` and `b^2 + a` cannot both be squares.
@@ -371,29 +405,46 @@ lemma not_isSquare_sq_add_or (a b : ℕ) (ha : 0 < a) (hb : 0 < b) :
   unfold IsSquare
   by_cases h : a = b
   · left
-    by_contra h₁
-    obtain ⟨m, hm⟩ := h₁
-    rw [h] at hm
-    ring at hm
-    have aux : b + b ^ 2  = (1 + b) * b := by ring
-    rw [aux] at hm
-    sorry
-  · push_neg
-    · left
-      intro m
-      ring
-      by_contra h1
-      push_neg at h
-      cases lt_or_gt_of_ne h with
-      | inl h_lt => have hab0 : a ^ 2 < b + a ^ 2 := by sorry
-                    have hab : b + a ^ 2 < a + a ^2 := by sorry
-                    have hab1 : a ^ 2 + a < (a + 1) ^ 2 := by nlinarith
-                    have hab2 : a ^ 2 < a ^ 2 + b ∧ a ^ 2 + b = m ^ 2 ∧ a ^ 2 + b < (b + 1) ^ 2 := by sorry
-
-      | inr h_gt =>
-      sorry
-
-
+    by_contra hr
+    rw[← h] at hr
+    obtain ⟨ r, hr'⟩ := hr
+    ring at hr'
+    have ha' : a^2 < a^2 + a := by linarith
+    have := calc a^2 + a
+      _= a*(a+1):= by ring
+      _< (a+1)*(a+1) := by linarith
+      _= (a+1)^2 := by ring
+    have hr'' : a ^ 2 + a = r ^ 2 := by linarith
+    rw[hr''] at ha'
+    rw[hr''] at this
+    have har : a < r := by exact lt_of_pow_lt_pow_left' 2 ha'
+    have har1 : r < a + 1 := by exact lt_of_pow_lt_pow_left' 2 this
+    linarith
+  by_cases h2 : a < b
+  · right
+    by_contra hr
+    obtain ⟨r, hr'⟩ := hr
+    ring at hr'
+    have hba : b^2 < a + b ^2 := by linarith
+    have hab : a + b ^2 < (b+1)^2 := by linarith
+    have hr'' : r ^ 2 = a + b ^ 2 := by linarith
+    rw[← hr''] at hba hab
+    have hbr : b < r := by exact lt_of_pow_lt_pow_left' 2 hba
+    have hbr1 : r < b + 1 := by exact lt_of_pow_lt_pow_left' 2 hab
+    linarith
+  simp at h2
+  have h3 : b < a := by exact Nat.lt_of_le_of_ne h2 fun a_1 ↦ h $ id (Eq.symm a_1)
+  · left -- note that we just have to repeat the previous proof changing a and b
+    by_contra hr
+    obtain ⟨r, hr'⟩ := hr
+    ring at hr'
+    have hba : a^2 < b + a ^2 := by linarith
+    have hab : b + a ^2 < (a+1)^2 := by linarith
+    have hr'' : r ^ 2 = b + a ^ 2 := by linarith
+    rw[← hr''] at hba hab
+    have hbr : a < r := by exact lt_of_pow_lt_pow_left' 2 hba
+    have hbr1 : r < a + 1 := by exact lt_of_pow_lt_pow_left' 2 hab
+    linarith
   }
 
 
@@ -403,9 +454,16 @@ behind notation. But you can use apply to use the lemmas about real numbers. -/
 
 abbrev PosReal : Type := {x : ℝ // 0 < x}
 
-def groupPosReal : Group PosReal := sorry
+-- SOME PROPERTIES CAN BE DIRECTLY INHERITED FROM ℝ, BUT OTHERS NEED TO BE REFINED
 
-
+def groupPosReal : Group PosReal where
+ mul x y := x * y
+ one := 1 -- inherited from ℝ since 1 ∈ ℝ
+ inv x := ⟨x.val⁻¹, inv_pos.mpr x.property⟩
+ mul_assoc x y z := mul_assoc x y z
+ one_mul x := one_mul x
+ mul_one x := mul_one x
+ inv_mul_cancel x := by refine Eq.symm (Subtype.eq ?_); field_simp; rw [div_self (ne_of_gt x.property)]
 
 /-
 Compute by induction the cardinality of the powerset of a finite set.
@@ -434,6 +492,49 @@ attribute [-simp] card_powerset
 lemma fintype_card_powerset (α : Type*) (s : Finset α) :
     Finset.card (powerset s) = 2 ^ Finset.card s := by {
      induction s using Finset.induction with
-     | empty => sorry
-     | @insert x s hxs ih => sorry
-  }
+     | empty => simp
+     | @insert x s hxs ih =>
+       rw [Finset.powerset_insert, Finset.card_insert_of_not_mem]
+       rw [@card_union]
+       -- But x ∉ s, so (s.powerset ∩ Finset.image (insert x) s.powerset).card has to be 0
+       have empty_interc : s.powerset ∩ Finset.image (insert x) s.powerset = ∅ := by {
+        ext A
+        constructor
+        · intro h
+          simp at h
+          by_contra h1
+          have h₁ : x ∈ insert x A := by exact mem_insert_self x A
+          obtain ⟨ha, haa⟩ := h
+          obtain ⟨a, h2, h3⟩ := haa
+          have h4 : x ∈ insert x a := by exact mem_insert_self x a
+          rw [h3] at h4
+          have h5 : x ∈ s := ha h4
+          contradiction
+        · intro h
+          contradiction}
+       have h : (s.powerset ∩ Finset.image (insert x) s.powerset).card = 0 := by exact Finset.card_eq_zero.mpr empty_interc
+       rw [h, ih]
+       simp
+       have h' : (Finset.image (insert x) s.powerset).card = s.powerset.card := by {
+        refine card_image_iff.mpr ?_
+        unfold InjOn
+        intro x1 h1 x2 h2 hxx1x2
+        have h6 : ∀ Y, Y ∈ s.powerset → x ∉ Y := by exact fun Y a ↦ not_mem_of_mem_powerset_of_not_mem a hxs
+        have h7 := h6 x1 h1
+        have h8 := h6 x2 h2
+        ext y
+        constructor
+        intro hx1
+        have hy : y ≠ x := by exact ne_of_mem_of_not_mem hx1 (h6 x1 h1)
+        have hyx1 : y ∈ insert x x1 := by exact Finset.mem_insert_of_mem hx1
+        rw[hxx1x2] at hyx1
+        exact Finset.mem_of_mem_insert_of_ne hyx1 hy
+        intro hx2
+        have hy : y ≠ x := by exact ne_of_mem_of_not_mem hx2 (h6 x2 h2)
+        have hyx2 : y ∈ insert x x2 := by exact Finset.mem_insert_of_mem hx2
+        rw[← hxx1x2] at hyx2
+        exact Finset.mem_of_mem_insert_of_ne hyx2 hy
+       }
+       rw[h', ih]; ring
+       assumption
+    }

@@ -58,7 +58,7 @@ others are predicates that take another class as argument -/
 #check mul_div_cancel_right₀ -- ring-like
 
 #check mul_le_mul_left' -- group-like
-#check mul_le_mul_left -- group-like
+#check mul_le_mul_left -- ring-like
 #check mul_le_mul_of_nonneg_left -- ring-like
 
 /- Use Loogle to find lemmas you want.

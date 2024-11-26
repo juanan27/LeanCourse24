@@ -99,11 +99,14 @@ since `↑n - ↑m = ↑(n - m)` and `↑n / ↑m = ↑(n / m)` are not always t
 example (n : ℕ) : ((n + 1 : ℤ) : ℚ) = n + 1 := by norm_cast
 
 example (n m : ℕ) (h : (n : ℚ) + 1 ≤ m) : (n : ℝ) + 1 ≤ m := by {
-  sorry
+  norm_cast at *
   }
 
-example (n m : ℕ) (h : n = m * m + 2) : (n : ℝ) - 3 = (m + 1) * (m - 1) := by {
-  sorry
+example (n m : ℕ) (h : (n : ℚ) = m * m + 2) : (n : ℝ) - 3 = (m + 1) * (m - 1) := by {
+  norm_cast at h
+  rw [h]
+  push_cast
+  ring
   }
 
 
@@ -267,10 +270,10 @@ def add'' : Point → Point → Point
   | ⟨ux, uy, uz⟩, ⟨vx, vy, vz⟩ => ⟨ux + vx, uy + vy, uz + vz⟩
 
 /- We define these operations in `namespace Point`.
-This means that if this namespace is open we can write `add p q`.
+This means that if this namespace is open we can write `add p q`  .
 If the namespace isn't open, we have to write `Point.add p q`.
 
-In either case, we can use the *projection notation*,
+In either case, we can use the *projection notation*, 
 `p.add q` where `p q : Point`.
 Lean knows that we mean the function `Point.add`,
 by looking at the type of `p`, which is `Point`. -/
@@ -338,6 +341,8 @@ structure PosPoint where
   y_pos : 0 < y
   z_pos : 0 < z
 
+
+/- ⟨one⟩? -/
 def PointPoint.add (a b : PosPoint) : PosPoint :=
 { x := a.x + b.x
   y := a.y + b.y
@@ -380,7 +385,7 @@ def PosPoint'' : Type :=
   { x : ℝ × (ℝ × ℝ) // x.1 > 0 ∧ x.2.1 > 0 ∧ x.2.2 > 0 }
 
 
-
+-- dsimp basically unfold definitions, does not apply lemmas      
 
 
 /- Structures can have parameters -/
