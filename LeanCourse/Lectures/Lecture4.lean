@@ -125,7 +125,7 @@ example {s : Set α} {t : Set β} {f : α → β} : f '' s ⊆ t ↔ s ⊆ f ⁻
     simp
     apply h
     -- simp
-    exact?
+    exact mem_image_of_mem f hx
   · intro h y hy
     obtain ⟨x, x_in_s, fx_eq_y⟩ := hy
     subst y

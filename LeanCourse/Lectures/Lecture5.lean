@@ -358,9 +358,6 @@ example (a b : Point) : a + b = b + a := by {
 end Point
 
 
-
-
-
 /- We can bundle properties in structures -/
 
 structure PosPoint where

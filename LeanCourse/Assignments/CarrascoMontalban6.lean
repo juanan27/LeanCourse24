@@ -107,10 +107,10 @@ def myEquivalenceRelation (X : Type*) : Setoid X where
   r x y := x = y
   iseqv := {
     refl := by exact fun x ↦ rfl
-    symm := by exact fun {x y} a ↦ id (Eq.symm a)
+    symm := by exact fun {x y} a ↦ id $ Eq.symm a
     trans := by {
       intro x y z hx hy
-      simp[hx, hy]
+      simp [hx, hy]
     }
   } -- Here you have to show that this is an equivalence.
                  -- If you click on the `sorry`, a lightbulb will appear to give the fields
@@ -130,26 +130,25 @@ Use `Quotient.ind` to prove something for all elements of a quotient.
 You can use this using the induction tactic: `induction x using Quotient.ind; rename_i x`.
 -/
 def quotient_equiv_subtype (X : Type*) :
-    Quotient (myEquivalenceRelation X) ≃ X where
-      toFun := by {
+    Quotient (myEquivalenceRelation X) ≃ X := {
+     toFun := by {
      intro h
-     apply Quotient.lift id (λ a b h => ?_)
+     apply Quotient.lift id $ λ a b h => ?_
      repeat exact h
      }
-      invFun := by {
+     invFun := by {
      exact fun a ↦ ⟦a⟧
      }
-      left_inv := by {
+     left_inv := by {
       intro x
       induction x using Quotient.ind; rename_i x
       rfl
      }
-      right_inv := by {
+     right_inv := by {
       intro x
       rfl
      }
-
-
+     }
 
 
 section GroupActions
@@ -162,60 +161,58 @@ precisely when one element is in the orbit of the other. -/
 def orbitOf (x : X) : Set X := range (fun g : G ↦ g • x)
 
 lemma orbitOf_eq_iff (x y : X) : orbitOf G x = orbitOf G y ↔ y ∈ orbitOf G x := by {
-  --unfold orbitOf at *
   constructor
   · intro h
-    simp at *
-    have h2 : y ∈ orbitOf G y := by {
-    have h3 : y = (1 : G) • y := by exact Eq.symm (MulAction.one_smul y)
-    unfold orbitOf
-    use 1
-    exact id (Eq.symm h3)
-    }
-    rw[h]
-    assumption
+    rw [h]
+    use (1 : G)
+    exact MulAction.one_smul y
+
   · intro h
     ext a
     constructor
-    · intro ha
-  --unfold orbitOf at *
-  --have hy : ∃ g_1 : G, g_1 • x = y := by exact h
-      obtain ⟨g_1, hg_1⟩ := h
-      obtain ⟨g_2, hg_2⟩ := ha
-      unfold orbitOf
-      simp at *
-      use g_2 * g_1⁻¹
-      rw[← hg_1, ← hg_2]
-  --have hg : (g_2 • g_1⁻¹) • g_1 = g_2 • (g_1⁻¹ • g_1) := by exact IsScalarTower.smul_assoc g_2 g_1⁻¹ g_1
-      have hgact : ((g_2:G) * (g_1⁻¹:G)) • (g_1:G) = (g_2:G) • ((g_1⁻¹:G) * (g_1:G)) := by exact mul_smul g_2 g_1⁻¹ g_1
-  --have h1 : (g_1⁻¹ * g_1) • x = (1 : G) • x := by group
-  --have h2 : (1 : G) • x = x := by exact MulAction.one_smul x
-      have h3 : (g_2 * g_1⁻¹) • g_1 • x = ((g_2 * g_1⁻¹) • g_1) • x := by exact Eq.symm (IsScalarTower.smul_assoc (g_2 * g_1⁻¹) g_1 x)
-      have h4 : ((g_2 * g_1⁻¹) • g_1) • x = (g_2 * (g_1⁻¹ * g_1)) • x := by exact congrFun (congrArg HSMul.hSMul hgact) x
-      rw[h3, h4]
-      group
-    · intro ha -- analogous proof to the previous one
-      obtain ⟨g_1, hg_1⟩ := h
-      obtain ⟨g_2, hg_2⟩ := ha
-      unfold orbitOf
-      simp at *
-      use g_2 * g_1
-      rw[← hg_2, ← hg_1]
-      exact mul_smul g_2 g_1 x
+    · intro h'
+      obtain ⟨g₁, hy⟩ := h
+      obtain ⟨g₂, ha⟩ := h'
+      have h₁ : g₁ • x = y := by exact hy
+      have h₂ : g₂ • x = a := by exact ha
+      use g₂ * g₁⁻¹
+      simp
+      have hya : (g₂ * g₁⁻¹) • y = a := by {
+        calc
+           (g₂ * g₁⁻¹) • y = (g₂ * g₁⁻¹) • (g₁ • x) := by rw [h₁]
+            _ =  g₂ • (g₁⁻¹ • (g₁ • x)) := by exact mul_smul g₂ g₁⁻¹ (g₁ • x)
+            _ = g₂ • x := by rw [@inv_smul_smul]
+            _ = a := by rw [h₂]}
+      exact hya
+
+    · intro h'
+      obtain ⟨g₁, hy⟩ := h
+      obtain ⟨g₂, ha⟩ := h'
+      have h₁ : g₁ • x = y := by exact hy
+      have h₂ : g₂ • y = a := by exact ha
+      use g₂ * g₁
+      simp
+      have hxa : (g₂ * g₁) • x = a := by{
+        calc
+           (g₂ * g₁) • x = g₂ • (g₁ • x) := by exact mul_smul g₂ g₁ x
+           _ = g₂ • y := by rw [h₁]
+           _ = a := by rw [h₂]
+      }
+      exact hxa
   }
 
 /- Define the stabilizer of an element `x` as the subgroup of elements
 `g ∈ G` that satisfy `g • x = x`. -/
 def stabilizerOf (x : X) : Subgroup G where
   carrier := {g : G | g • x = x}
-  mul_mem' := by{
+  mul_mem' := by {
     intro a b ha hb
     have hag : ∃ g1 : G, g1 • a = a := by exact MulAction.exists_smul_eq G a a
     have hbg : ∃ g2 : G, g2 • b = b := by exact MulAction.exists_smul_eq G b b
     obtain ⟨g1, hg1⟩ := hag
     obtain ⟨g2, hg2⟩ := hbg
     have := calc
-      (a * b)• x = a• (b• x):= by exact mul_smul a b x
+      (a * b) • x = a • (b • x):= by exact mul_smul a b x
       _= a • x := by exact congrArg (HSMul.hSMul a) hb
       _= x := by exact ha
     trivial
@@ -224,7 +221,7 @@ def stabilizerOf (x : X) : Subgroup G where
   inv_mem' := by {
     simp
     intro x_1 hx_1
-    exact inv_smul_eq_iff.mpr (id (Eq.symm hx_1))
+    exact inv_smul_eq_iff.mpr $ id $ Eq.symm hx_1
   }
 
 -- This is a lemma that allows `simp` to simplify `x ≈ y` in the proof below.
@@ -232,7 +229,6 @@ def stabilizerOf (x : X) : Subgroup G where
     letI := QuotientGroup.leftRel s; x ≈ y ↔ x⁻¹ * y ∈ s :=
   QuotientGroup.leftRel_apply
 
-/- Let's prove the orbit-stabilizer theorem.
 /- Let's prove the orbit-stabilizer theorem.
 
 Hint: Only define the forward map (as a separate definition),
@@ -249,9 +245,9 @@ by {
         refine eq_inv_smul_iff.mp ?_
         simp at hab
         have hr : a⁻¹ • b • x = (a⁻¹ * b) • x := by exact smul_smul a⁻¹ b x
-        rw[hr]
-        simp[stabilizerOf] at hab
-        exact id (Eq.symm hab)
+        rw [hr]
+        simp [stabilizerOf] at hab
+        exact id $ Eq.symm hab
     )
   have h : Bijective φ := by {
   constructor
@@ -261,12 +257,12 @@ by {
     apply Quotient.ind
     intro a1 haa1
     apply Quotient.sound
-    simp[stabilizerOf]
+    simp [stabilizerOf]
     simp_all only [id_eq, Quotient.lift_mk, Subtype.mk.injEq, φ]
     have h2 : x = a⁻¹ • a1 • x := by exact eq_inv_smul_iff.mpr haa1
     have h3 : a⁻¹ • a1 • x = (a⁻¹ * a1) • x := by exact smul_smul a⁻¹ a1 x
     rw[← h3]
-    exact id (Eq.symm h2)
+    exact id $ Eq.symm h2
   · unfold Surjective
     intro ⟨a, g, h'⟩
     use g
@@ -275,6 +271,7 @@ by {
   apply Equiv.ofBijective
   exact h
   }
+
 
 
 end GroupActions

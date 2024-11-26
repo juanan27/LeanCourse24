@@ -145,51 +145,15 @@ open Nat Finset in
 lemma add_pow_eq_pow_add_pow (x y : R) : (x + y) ^ p = x ^ p + y ^ p := by {
   have hp' : p.Prime := hp.out
   have range_eq_insert_Ioo : range p = insert 0 (Ioo 0 p)
-  · ext a
-    constructor
-    · intro ha
-      unfold range at *
-      simp at *
-      omega
-    · intro ha
-      simp at *
-      obtain h1|h2 := ha
-      · have hp : p > 0 := by exact pos_of_neZero p
-        exact lt_of_eq_of_lt h1 hp
-      · tauto
+  · sorry
   have dvd_choose : ∀ i ∈ Ioo 0 p, p ∣ Nat.choose p i := by
-    intro i hi
-    simp at *
-    refine Prime.dvd_choose_self hp' ?hk ?hkp
-    omega
-    omega
+    sorry
   have h6 : ∑ i in Ioo 0 p, x ^ i * y ^ (p - i) * Nat.choose p i = 0 :=
   calc
-    _ =  ∑ i in Ioo 0 p, x ^ i * y ^ (p - i) * 0 := by{
-      simp at *
-      have h8 : ∀ i ∈ Ioo 0 p, (Nat.choose p i : R) = 0 := by{
-        intro i hi
-        simp_all only [mem_Ioo]
-        obtain ⟨left, right⟩ := hi
-        specialize dvd_choose i
-        have hi' : i < p → p ∣ p.choose i := by exact fun a ↦ dvd_choose left right
-        have hi'': p ∣ p.choose i := by exact dvd_choose left right
-        have h := CharP.cast_eq_zero_iff
-        specialize h R p (p.choose i)
-        rw[h]
-        exact hi''
-      }
-      have h0 : ∀ i ∈ Ioo 0 p, x ^ i * y ^ (p - i) * ↑(p.choose i) = 0 := by exact fun i a ↦ mul_eq_zero_of_right (x ^ i * y ^ (p - i)) (h8 i a)
-      exact sum_eq_zero h0
-      }
-
-    _ = 0 := by simp
-  rw[add_pow]
-  have h9 : ∑ m ∈ range (p + 1), x ^ m * y ^ (p - m) * ↑(p.choose m) = ∑ m ∈ range (p), x ^ m * y ^ (p - m) * ↑(p.choose m) + x ^ p * y ^ (p - p) * ↑(p.choose p) := by exact sum_range_succ (fun x_1 ↦ x ^ x_1 * y ^ (p - x_1) * ↑(p.choose x_1)) p
-  rw[h9]
-  rw[range_eq_insert_Ioo]
-  simp[h6]
-  exact AddCommMagma.add_comm (y ^ p) (x ^ p)
+    _ =  ∑ i in Ioo 0 p, x ^ i * y ^ (p - i) * 0 := by
+      sorry
+    _ = 0 := by sorry
+  sorry
   }
 
 
@@ -205,47 +169,20 @@ for modules over a ring, so feel free to think of `M₁`, `M₂`, `N` and `M'` a
 You might recognize this as the characterization of a *coproduct* in category theory. -/
 
 def coproduct (f : M₁ →ₗ[R] N) (g : M₂ →ₗ[R] N) : M₁ × M₂ →ₗ[R] N where
-  toFun x :=  f x.1 + g x.2
-  map_add' x y := by {
-    simp at *
-    exact add_add_add_comm (f x.1) (f y.1) (g x.2) (g y.2)
-  }
-  map_smul' r x := by {
-    simp at *
-  }
+  toFun x := sorry
+  map_add' x y := sorry
+  map_smul' r x := sorry
 
 -- this can be useful to have as a simp-lemma, and should be proven by `rfl`
 @[simp] lemma coproduct_def (f : M₁ →ₗ[R] N) (g : M₂ →ₗ[R] N) (x : M₁) (y : M₂) :
-  coproduct f g (x, y) = f x + g y := rfl
+  coproduct f g (x, y) = sorry := sorry
 
 lemma coproduct_unique {f : M₁ →ₗ[R] N} {g : M₂ →ₗ[R] N} {l : M₁ × M₂ →ₗ[R] N} :
     l = coproduct f g ↔
     l.comp (LinearMap.inl R M₁ M₂) = f ∧
     l.comp (LinearMap.inr R M₁ M₂) = g := by {
-  constructor
-  · intro hl
-    constructor
-    · simp at *
-      ext a
-      simp[hl]
-    · simp at *
-      ext a
-      simp[hl]
-  · intro hl
-    ext a
-    obtain ⟨hl1, hl2⟩ := hl
-    unfold coproduct
-    simp
-    rw[← hl1, ← hl2]
-    simp
-    have ht := calc
-      l a = l (a.1, a.2) := by exact rfl
-      _= l ((a.1 , 0) + (0, a.2)) := by simp[congrArg]
-      _= l (a.1 , 0) + l (0, a.2) := by exact LinearMap.map_add l (a.1, 0) (0, a.2)
-    exact ht
-    }
-
-
+  sorry
+  }
 
 
 end LinearMap

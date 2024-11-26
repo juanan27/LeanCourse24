@@ -246,7 +246,7 @@ lemma exercise_min_assoc : min a (min b c) = min (min a b) c := by {
 
   }
 
-end Min
+
 
 /- Prove that the following function is continuous.
 You can use `Continuous.div` as the first step,
