@@ -181,13 +181,16 @@ a filter of the form `if q then F else G`. The next exercise is a more concrete 
 Useful lemmas here are
 * `Filter.Eventually.filter_mono`
 * `Filter.Eventually.mono` -/
+
+-- Just to know, pure a = ℘ {a} (principal filter)
+
 lemma technical_filter_exercise {ι α : Type*} {p : ι → Prop} {q : Prop} {a b : α}
     {L : Filter ι} {F G : Filter α}
     (hbF : ∀ᶠ x in F, x ≠ b) (haG : ∀ᶠ x in G, x ≠ a) (haF : pure a ≤ F) (hbG : pure b ≤ G) :
     (∀ᶠ i in L, p i ↔ q) ↔
     Tendsto (fun i ↦ if p i then a else b) L (if q then F else G) := by {
   have hab : a ≠ b
-  · sorry
+  · sorry -- hecho Jorge
   rw [tendsto_iff_eventually]
   sorry
   }
@@ -202,5 +205,9 @@ lemma tendsto_indicator_iff {ι : Type*} {L : Filter ι} {s : ι → Set ℝ} {t
     (ha : ∀ x, f x ≠ 0) :
     (∀ x, ∀ᶠ i in L, x ∈ s i ↔ x ∈ t) ↔
     Tendsto (fun i ↦ indicator (s i) f) L (𝓝 (indicator t f)) := by {
+  rw [tendsto_pi_nhds]
+  apply forall_congr'
+  intro x
+  rw [technical_filter_exercise]
   sorry
   }
