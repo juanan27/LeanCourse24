@@ -130,7 +130,7 @@ example {X : Type*} (F F' : Filter X) :
 
 /- This makes the principal filter `𝓟 : Set X → Filter X` monotone. -/
 example {X : Type*} : Monotone (𝓟 : Set X → Filter X) := by
-  exact?
+  exact monotone_principal
 
 
 

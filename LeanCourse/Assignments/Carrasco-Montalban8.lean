@@ -200,9 +200,41 @@ lemma technical_filter_exercise {ι α : Type*} {p : ι → Prop} {q : Prop} {a 
     (∀ᶠ i in L, p i ↔ q) ↔
     Tendsto (fun i ↦ if p i then a else b) L (if q then F else G) := by {
   have hab : a ≠ b
-  · sorry
+  · exact haF hbF
   rw [tendsto_iff_eventually]
-  sorry
+  constructor
+  · intro hi
+    intro p_1 a_1
+    apply Filter.Eventually.mono
+    exact hi
+    intro x hx
+    replace hx : p x = q := propext hx
+    subst hx
+    simp_all only [ne_eq]
+    split_ifs
+    next h =>
+      simp_all only [iff_true, ite_true]
+      apply haF
+      exact a_1
+    next h =>
+      simp_all only [iff_false, ite_false]
+      apply hbG
+      exact a_1
+  · intro hr
+    simp_all only [ne_eq]
+    split_ifs at hr
+    next h =>
+      simp_all only [iff_true]
+      apply Filter.Eventually.mono
+      exact hr hbF
+      intro x hxa
+      simp_all only [ite_eq_right_iff, imp_false, Decidable.not_not]
+    next h =>
+      simp_all only [iff_false]
+      apply Filter.Eventually.mono
+      exact hr haG
+      intro x hxa
+      simp_all only [ite_eq_left_iff, Classical.not_imp, not_false_eq_true]
   }
 
 /- To be more concrete, we can use the previous lemma to prove the following.
@@ -215,5 +247,14 @@ lemma tendsto_indicator_iff {ι : Type*} {L : Filter ι} {s : ι → Set ℝ} {t
     (ha : ∀ x, f x ≠ 0) :
     (∀ x, ∀ᶠ i in L, x ∈ s i ↔ x ∈ t) ↔
     Tendsto (fun i ↦ indicator (s i) f) L (𝓝 (indicator t f)) := by {
-  sorry
+  simp only [tendsto_pi_nhds]
+  apply forall_congr'
+  intro x
+  rw [technical_filter_exercise (a := f x) (b := 0) (F := 𝓝 (f x)) (G := 𝓝 0)]
+  congrm Tendsto (fun i ↦ if x ∈ s i then f x else 0) L ?L₂
+  by_cases hx : x ∈ t
+  <;> simp [hx]
+  map_tacs [exact ContinuousAt.eventually_ne (fun ⦃U⦄ a ↦ a) (ha x);
+  exact ContinuousAt.eventually_ne (fun ⦃U⦄ a ↦ a) fun a ↦ ha x (id (Eq.symm a));
+  (exact intervalIntegral.FTCFilter.pure_le); exact intervalIntegral.FTCFilter.pure_le]
   }
