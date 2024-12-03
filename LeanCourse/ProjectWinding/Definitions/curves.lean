@@ -23,8 +23,8 @@ w(γ, x) = "number of times γ winds around x"
 
 -/
 
-/- To warm up, we will start with probably one of the most basic definitios of the winding number,
-this is, using the Cauchy Integral Formula (from now on, CIF) -/
+/- To warm up, we will start with probably one of the most basic definitions of the winding number,
+this is, using the Cauchy Integral Formula (from now on, CIF). -/
 
 
 /- First definitions will be way simpler, but this will escalate quickly! -/
