@@ -23,82 +23,95 @@ w(γ, x) = "number of times γ winds around x"
 
 -/
 
-/- To warm up, we will start with probably one of the most basic definitions of the winding number,
-this is, using the Cauchy Integral Formula (from now on, CIF). -/
+/- To warm up, we will start with probably one of the most basic definitios of the winding number,
+this is, using the Cauchy Integral Formula (from now on, CIF) -/
 
 
 /- First definitions will be way simpler, but this will escalate quickly! -/
 
-structure curve (a b : ℝ) where
+open Set unitInterval Finset Metric
+
+structure curve where
  toFun : ℝ → ℂ
- diff_curve : DifferentiableOn ℝ toFun $ Set.Icc a b
- cont_deriv : ContinuousOn (deriv toFun) $ Set.Icc a b
+ diff_curve : DifferentiableOn ℝ toFun $ I
+ cont_deriv : ContinuousOn (deriv toFun) $ I
 
 
 -- It is sometimes useful to interpret curves as (ℝ → ℂ) maps
-instance {a b : ℝ} : CoeFun (curve a b) fun _ => ℝ → ℂ := ⟨fun f => f.toFun⟩
+instance : CoeFun curve fun _ => ℝ → ℂ := ⟨fun f => f.toFun⟩
 
 -- We'll make continuity and differentiability of curves explicit using Lemmas
 
-lemma curve.ContOn {a b : ℝ} (γ : curve a b) : ContinuousOn γ (Set.Icc a b) := by {
+lemma curve.ContOn (γ : curve) : ContinuousOn γ I := by {
   exact DifferentiableOn.continuousOn $ γ.diff_curve
 }
 
-lemma curve.DiffOn {a b : ℝ} (γ : curve a b) : DifferentiableOn ℝ γ (Set.Icc a b) := by {
+lemma curve.DiffOn (γ : curve) : DifferentiableOn ℝ γ I := by {
   exact γ.diff_curve
 }
 
 -- Let us now define the structure of a closed curve from the definition of curve. It inherits
 -- continuity and differentiability
 
-structure closed_curve (a b : ℝ) extends curve a b where
-closed : toFun a = toFun b
+structure closed_curve extends curve where
+closed : toFun 0 = toFun 1
 
-instance {a b : ℝ} : CoeFun (closed_curve a b) fun _ => ℝ → ℂ := ⟨fun f => f.toFun⟩
+-- Closed curves can also be seen as functions, as we've done before
+
+instance : CoeFun (closed_curve) fun _ => ℝ → ℂ := ⟨fun f => f.toFun⟩
 
 -- Let us check this defintion works with the following example
 
-def curve.is_closed {a b : ℝ} (γ : curve a b) : Prop :=
+def curve.is_closed {a b : ℝ} (γ : curve) : Prop :=
   γ.toFun a = γ.toFun b
+
+-- To generalize, we can define piecewise curves:
+
+structure piecewiseCurve (n : ℕ) where
+  curves : Fin n → curve
+
+-- A curve can be seen as a 1-curve piecewise curve:
+
+instance : Coe curve (piecewiseCurve 1) where
+  coe := fun c => {curves := fun 0 => c}
+
+-- Now, we define the concatenation of piecewise curves. If γ is a piecewise curve formed by n curves
+-- and ψ is a piecewise curve formed by m, the γψ is a piecewise curve with (n + m) curves
+
+def concatenationOfCurves {n m : ℕ} (γ : piecewiseCurve n) (ψ : piecewiseCurve m) : piecewiseCurve (n + m) :=
+  {curves := fun i => by
+    by_cases h : i < n
+    · exact γ.curves (Fin.castLT i h)
+    · simp_all only [not_lt]
+      refine ψ.curves $ Fin.subNat n {
+        val := i
+        isLt := ?_
+      } h
+      rw [add_comm m n]
+      exact i.isLt
+  }
+
+-- Anyways, we will potentially make use of closed_curves. The definition of piecewise curves is given
+-- in case we need it later
 
 noncomputable section
 
 open Classical
 
 -- We give the first def of Winding Number (HAVE TO REFINE THIS)
-noncomputable def winding_number_complex {a b : ℝ} (z : ℂ) (γ : closed_curve a b) : ℂ :=
-  if ∀ t ∈ Set.Icc a b, γ t ≠ z then
-              1/(2*Real.pi*Complex.I) * ∫ t in a..b, (deriv γ t) / (γ t - z)
-   else 0
+noncomputable def ω (z : ℂ) (γ : closed_curve) : ℂ :=
+  if ∀ t ∈ I, γ t ≠ z then
+              1/(2*Real.pi*Complex.I) * ∫ t in I, (deriv γ t) / (γ t - z)
+   else -1
 
 -- TO DO: DEMOSTRAR CON ESTA DEFINICION QUE ES UN ENTERO
 
 -- HAY QUE TRABAJAR EN ESTA PRUEBA; DEFINIR ARGUMENTO (PPAL?)?
 
-theorem winding_number_integer {a b : ℝ} (z : ℂ) (γ : closed_curve a b)
-(h : ∀ t ∈ Set.Icc a b, γ t ≠ z) : ∃ (n : ℤ), winding_number_complex z γ = n := by {
-  unfold winding_number_complex
-  simp [h]
-  simp_all only [Set.mem_Icc, ne_eq, and_imp, not_false_eq_true, implies_true, ite_true]
-  let Ind := winding_number_complex z γ
-  have h_Ind : Ind = winding_number_complex z γ := by exact rfl
-  have γ_diff : DifferentiableOn ℝ γ (Set.Icc a b) := by exact curve.DiffOn γ.tocurve
-  have γz_diff : DifferentiableOn ℝ (fun t => γ t - z) (Set.Icc a b) := by {
-    simp
-    exact γ_diff
-  }
-  have h_log_diff : DifferentiableOn ℝ (fun t => Complex.log (γ t - z)) (Set.Icc a b) := by {
-    --simp_all only [differentiableOn_const, sub_iff_left]
-    refine add ?hf ?hg
-    · have aux : DifferentiableOn ℝ (fun t => Complex.abs (γ t - z)) (Set.Icc a b) := by {
-        sorry
-      }
-      sorry
-    · sorry
-  }
-  have h_log : ∫ t in a..b, deriv γ t / (γ t - z) = Complex.log (γ b - z) - Complex.log (γ a - z) := by sorry
-  rw [h_log]
-  field_simp
+theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I, γ t ≠ z)
+: ContinuousOn ω (univ \ (image γ I))  := by {
+  intro z₀ hz₀
+  unfold ω
   sorry
 
 }
