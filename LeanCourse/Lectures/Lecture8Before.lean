@@ -49,7 +49,7 @@ Solution: use filters.
 
 
 If `X` is a type, a filter `F : Filter X` is a
-collection of sets `F.sets : Set (Set X)` satisfying the following:
+collection of sets `F.sets : Set (Set X)` satisf  ying the following:
 -/
 section Filter
 
@@ -130,7 +130,7 @@ example {X : Type*} (F F' : Filter X) :
 
 /- This makes the principal filter `𝓟 : Set X → Filter X` monotone. -/
 example {X : Type*} : Monotone (𝓟 : Set X → Filter X) := by
-  exact monotone_principal
+  exact?
 
 
 
