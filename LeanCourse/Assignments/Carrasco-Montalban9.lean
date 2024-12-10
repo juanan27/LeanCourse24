@@ -212,8 +212,7 @@ lemma mono_exercise_part1_copy {f : α → α} (hf : Continuous f) (h2f : Inject
       rw [mem_uIcc]
       left
       constructor
-      · exact le_of_lt (gt_trans h₄' h)
-      · exact le_of_lt h₄''
+      map_tacs [exact le_of_lt $ gt_trans h₄' h; exact le_of_lt h₄'']
     }
     specialize h₂ h₆
     have h₇: (f '' [[a, b]]) ∩ (f '' [[x, b]]) = {f b} := by {
@@ -222,13 +221,12 @@ lemma mono_exercise_part1_copy {f : α → α} (hf : Continuous f) (h2f : Inject
         rw [uIcc_of_le, uIcc_of_ge, Set.Icc_inter_Icc_eq_singleton]
         map_tacs [exact hab; exact hb; exact hb; exact hab]
       }
-      rw [congrArg (image f) heq]
-      exact image_singleton
+      simp[congrArg (image f) heq]
     }
     have h₈ : c ∈ f '' [[a, b]] ∩ f '' [[x, b]] := by exact mem_inter h₁ h₂
     rw [h₇] at h₈
-    have h₉ := h2f (h2f (congrArg f (congrArg f h₈)))
-    have h₁₀ : c ≥ f b := by exact le_of_eq (h2f (h2f (congrArg f (congrArg f (id (Eq.symm h₉))))))
+    have h₉ := h2f $ h2f (congrArg f (congrArg f h₈))
+    have h₁₀ : c ≥ f b := by exact le_of_eq $ h2f (h2f (congrArg f (congrArg f (id (Eq.symm h₉)))))
     subst h₉
     simp_all only [uIcc_of_ge, ge_iff_le, uIcc_of_le, lt_self_iff_false]
   . simp at hb
@@ -238,8 +236,7 @@ lemma mono_exercise_part1_copy {f : α → α} (hf : Continuous f) (h2f : Inject
       rw [mem_uIcc]
       left
       constructor
-      · exact le_of_lt h₁₁'
-      · exact le_of_lt h₁₁''
+      map_tacs[exact le_of_lt h₁₁'; exact le_of_lt h₁₁'']
     }
     specialize h₀ h₁₂
     have h₁₃: c ∈ [[f x, f b]] := by {
@@ -250,7 +247,7 @@ lemma mono_exercise_part1_copy {f : α → α} (hf : Continuous f) (h2f : Inject
     }
     specialize h₂ h₁₃
     have h₁₄: (f '' [[a, x]]) ∩ (f '' [[x, b]]) = {f x} := by {
-      rw [Eq.symm (image_inter h2f)]
+      rw[Eq.symm $ image_inter h2f]
       have h₁₄': [[a, x]] ∩ [[x, b]] = {x} := by {
         rw [uIcc_of_le, uIcc_of_le, Set.Icc_inter_Icc_eq_singleton]
         map_tacs [exact hx; exact le_of_lt hb; exact le_of_lt hb; exact hx]
