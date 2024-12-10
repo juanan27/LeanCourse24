@@ -246,8 +246,7 @@ lemma mono_exercise_part1_copy {f : α → α} (hf : Continuous f) (h2f : Inject
       rw [mem_uIcc]
       left
       constructor
-      · exact le_of_lt h₁₁'
-      · exact le_of_lt (gt_trans h2ab h₁₁'')
+      map_tacs[exact le_of_lt h₁₁'; exact le_of_lt (gt_trans h2ab h₁₁'')]
     }
     specialize h₂ h₁₃
     have h₁₄: (f '' [[a, x]]) ∩ (f '' [[x, b]]) = {f x} := by {
@@ -256,13 +255,13 @@ lemma mono_exercise_part1_copy {f : α → α} (hf : Continuous f) (h2f : Inject
         rw [uIcc_of_le, uIcc_of_le, Set.Icc_inter_Icc_eq_singleton]
         map_tacs [exact hx; exact le_of_lt hb; exact le_of_lt hb; exact hx]
       }
-      simp_all only [uIcc_of_le, uIcc_of_ge, mem_image, mem_Icc, image_singleton]
+      simp_all
     }
     have h₁₅: c ∈ f '' [[a, x]] ∩ f '' [[x, b]] := by {
       rw [uIcc_comm a x]
       exact mem_inter h₀ h₂
     }
-    simp_all only [uIcc_of_le, uIcc_of_ge, mem_image, mem_Icc, mem_singleton_iff, lt_self_iff_false]
+    simp_all
   }
 
 
@@ -306,11 +305,11 @@ lemma mono_exercise_part1_copy {f : α → α} (hf : Continuous f) (h2f : Inject
       }
       apply setIntegral_congr measurableSet_Icc
       intro y hy
-      exact congrFun (congrArg HMul.hMul (heq y hy)) (f (cos y))
+      exact congrFun (congrArg HMul.hMul (heq y hy)) $ f (cos y)
     }
     _= ∫ x in (cos '' [[0,π]]), f x := by {
-        rw [← uIcc_of_le] at injg
-        simp_all [integral_image_eq_integral_abs_deriv_smul hs hg' injg]
+        rw[← uIcc_of_le] at injg
+        simp_all[integral_image_eq_integral_abs_deriv_smul hs hg' injg]
         simp[pi_nonneg]
       }
     _= ∫ x in [[-1,1]], f x := by {
@@ -320,13 +319,13 @@ lemma mono_exercise_part1_copy {f : α → α} (hf : Continuous f) (h2f : Inject
         · intro ha
           rw [@mem_image] at ha
           obtain ⟨y, hy⟩ := ha
-          simp_all
+          simp
           obtain ⟨hP, hQ⟩ := hy
           repeat rw[← hQ]
           constructor
           map_tacs [exact neg_one_le_cos y; exact cos_le_one y]
         · intro ha
-          simp_all
+          simp at ha
           obtain ⟨hP, hQ⟩ := ha
           use arccos a
           constructor
