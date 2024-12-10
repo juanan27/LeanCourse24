@@ -71,7 +71,7 @@ lemma mono_exercise_part1 {f : α → α} (hf : Continuous f) (h2f : Injective f
     (hab : a ≤ b) (h2ab : f a < f b) (hx : a ≤ x) : f a ≤ f x := by {
   unfold Injective at *
   by_contra h
-
+  sorry
   }
 
 /- Now use this and the intermediate value theorem again
@@ -185,27 +185,20 @@ variable (α : Type*) [ConditionallyCompleteLinearOrder α]
   [TopologicalSpace α] [OrderTopology α] [DenselyOrdered α] in
 lemma mono_exercise_part1_copy {f : α → α} (hf : Continuous f) (h2f : Injective f) {a b x : α}
     (hab : a ≤ b) (h2ab : f a < f b) (hx : a ≤ x) : f a ≤ f x := by {
-  unfold Injective at *
+  unfold Injective at h2f
   by_contra h
-  simp at h
-  have h₀: [[f x, f a]] ⊆ f '' [[x, a]] := by {
-    exact intermediate_value_uIcc (by exact Continuous.continuousOn hf)
-  }
-  have h₁: [[f a, f b]] ⊆ f '' [[a, b]] := by {
-    exact intermediate_value_uIcc (by exact Continuous.continuousOn hf)
-  }
-  have h₂: [[f x, f b]] ⊆ f '' [[x, b]] := by {
-    exact intermediate_value_uIcc (by exact Continuous.continuousOn hf)
-  }
-  by_cases hb : x ≥ b
+  simp_all
+  have h₀: [[f x, f a]] ⊆ f '' [[x, a]] := by exact intermediate_value_uIcc (by exact Continuous.continuousOn hf)
+  have h₁: [[f a, f b]] ⊆ f '' [[a, b]] := by exact intermediate_value_uIcc (by exact Continuous.continuousOn hf)
+  have h₂: [[f x, f b]] ⊆ f '' [[x, b]] := by exact intermediate_value_uIcc (by exact Continuous.continuousOn hf)
+  by_cases hbx : x ≥ b
   . have h₄: ∃ c, f a < c ∧ c < f b := by exact exists_between h2ab
     obtain ⟨c, h₄', h₄''⟩ := h₄
     have h₅: c ∈ [[f a, f b]] := by {
       rw [mem_uIcc]
       left
       constructor
-      · exact le_of_lt h₄'
-      · exact le_of_lt h₄''
+      map_tacs[exact le_of_lt h₄'; exact le_of_lt h₄'']
     }
     specialize h₁ h₅
     have h₆: c ∈ [[f x, f b]] := by {
@@ -217,20 +210,20 @@ lemma mono_exercise_part1_copy {f : α → α} (hf : Continuous f) (h2f : Inject
     specialize h₂ h₆
     have h₇: (f '' [[a, b]]) ∩ (f '' [[x, b]]) = {f b} := by {
       rw [Eq.symm (image_inter h2f)]
-      have heq: [[a, b]] ∩ [[x, b]] = {b}:= by{
+      have heq: [[a, b]] ∩ [[x, b]] = {b}:= by {
         rw [uIcc_of_le, uIcc_of_ge, Set.Icc_inter_Icc_eq_singleton]
-        map_tacs [exact hab; exact hb; exact hb; exact hab]
+        map_tacs [exact hab; exact hbx; exact hbx; exact hab]
       }
       simp[congrArg (image f) heq]
     }
-    have h₈ : c ∈ f '' [[a, b]] ∩ f '' [[x, b]] := by exact mem_inter h₁ h₂
+    have h₈ : c ∈ f '' [[a, b]] ∩ f '' [[x, b]] := mem_inter h₁ h₂
     rw [h₇] at h₈
     have h₉ := h2f $ h2f (congrArg f (congrArg f h₈))
     have h₁₀ : c ≥ f b := by exact le_of_eq $ h2f (h2f (congrArg f (congrArg f (id (Eq.symm h₉)))))
     subst h₉
     simp_all only [uIcc_of_ge, ge_iff_le, uIcc_of_le, lt_self_iff_false]
-  . simp at hb
-    have h₁₁ : ∃ c, f x < c ∧ c < f a := by exact exists_between h
+  . simp at hbx
+    have h₁₁ : ∃ c, f x < c ∧ c < f a := exists_between h
     obtain ⟨c, h₁₁', h₁₁''⟩ := h₁₁
     have h₁₂ : c ∈ [[f x, f a]] := by {
       rw [mem_uIcc]
@@ -250,12 +243,12 @@ lemma mono_exercise_part1_copy {f : α → α} (hf : Continuous f) (h2f : Inject
       rw[Eq.symm $ image_inter h2f]
       have h₁₄': [[a, x]] ∩ [[x, b]] = {x} := by {
         rw [uIcc_of_le, uIcc_of_le, Set.Icc_inter_Icc_eq_singleton]
-        map_tacs [exact hx; exact le_of_lt hb; exact le_of_lt hb; exact hx]
+        map_tacs [exact hx; exact le_of_lt hbx; exact le_of_lt hbx; exact hx]
       }
       simp_all
     }
     have h₁₅: c ∈ f '' [[a, x]] ∩ f '' [[x, b]] := by {
-      rw [uIcc_comm a x]
+      simp[uIcc_comm a x]
       exact mem_inter h₀ h₂
     }
     simp_all
@@ -284,7 +277,7 @@ lemma mono_exercise_part1_copy {f : α → α} (hf : Continuous f) (h2f : Inject
     _= ∫ x in [[0, π]], (abs (sin x)) * f (cos x) := by {
       have h₀ :  ∀ x ∈ [[0, π]], sin x ≥ 0 := by {
         intro x hx
-        rw[@mem_uIcc] at hx
+        rw[mem_uIcc] at hx
         obtain hP|hQ := hx
         apply sin_nonneg_of_nonneg_of_le_pi
         · obtain ⟨hP', hP''⟩ := hP
@@ -314,7 +307,7 @@ lemma mono_exercise_part1_copy {f : α → α} (hf : Continuous f) (h2f : Inject
         ext a
         constructor
         · intro ha
-          rw [@mem_image] at ha
+          rw [mem_image] at ha
           obtain ⟨y, hy⟩ := ha
           simp
           obtain ⟨hP, hQ⟩ := hy
