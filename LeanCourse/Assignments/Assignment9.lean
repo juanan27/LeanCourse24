@@ -187,5 +187,28 @@ lemma mono_exercise_part1_copy {f : α → α} (hf : Continuous f) (h2f : Inject
 /- Prove the following using the change of variables theorem. -/
 lemma change_of_variables_exercise (f : ℝ → ℝ) :
     ∫ x in (0)..π, sin x * f (cos x) = ∫ y in (-1)..1, f y := by {
-  sorry
+  let g := fun x => cos x
+  have h : g = cos := by exact rfl
+  let s := (Set.Icc (0) (Real.pi) : Set ℝ)
+  have hme : MeasurableSet s := by exact measurableSet_Icc
+  have hinj : InjOn g s := by exact injOn_cos
+  have hderiv : ∀ x ∈ s, HasDerivWithinAt g (-sin x) s x := by {
+    intro x hx
+    rw [h]
+    refine HasDerivAt.hasDerivWithinAt (hasDerivAt_cos x)
+  }
+  have image_eq : g '' s = Icc (-1 : ℝ) 1 := by {
+    ext a
+    constructor
+    · intro hh
+      have h1 : g '' {0} = {1} := by rw [h]; sorry
+      sorry
+
+    · sorry
+  }
+  --rw [← image_eq]
+  refine integral_image_eq_integral_abs_deriv_smul hme _ hinj
+  -- Prove the derivative condition
+  intros x hx
+  exact hderiv x hx
   }

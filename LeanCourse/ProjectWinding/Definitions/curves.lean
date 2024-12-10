@@ -81,7 +81,7 @@ instance : Coe curve (piecewiseCurve 1) where
 def concatenationOfCurves {n m : ℕ} (γ : piecewiseCurve n) (ψ : piecewiseCurve m) : piecewiseCurve (n + m) :=
   {curves := fun i => by
     by_cases h : i < n
-    · exact γ.curves (Fin.castLT i h)
+    · exact γ.curves $ Fin.castLT i h
     · simp_all only [not_lt]
       refine ψ.curves $ Fin.subNat n {
         val := i
