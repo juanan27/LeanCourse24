@@ -528,3 +528,4 @@ example {s : Set ℝ} {f f' : ℝ → ℝ}
     (hf' : ∀ x ∈ s, HasDerivWithinAt f (f' x) s x)
     (hf : InjOn f s) (g : ℝ → E) : ∫ x in f '' s, g x = ∫ x in s, |f' x| • g (f x) :=
   integral_image_eq_integral_abs_deriv_smul hs hf' hf g
+--theorem cos_derivative : ∀ x : ℝ, HasDerivAt cos (-sin x) x := exact?
