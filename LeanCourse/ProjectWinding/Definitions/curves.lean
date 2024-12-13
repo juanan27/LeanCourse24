@@ -81,7 +81,7 @@ instance : Coe curve (piecewiseCurve 1) where
 def concatenationOfCurves {n m : ℕ} (γ : piecewiseCurve n) (ψ : piecewiseCurve m) : piecewiseCurve (n + m) :=
   {curves := fun i => by
     by_cases h : i < n
-    · exact γ.curves (Fin.castLT i h)
+    · exact γ.curves $ Fin.castLT i h
     · simp_all only [not_lt]
       refine ψ.curves $ Fin.subNat n {
         val := i
@@ -101,7 +101,7 @@ open Classical
 -- We give the first def of Winding Number (HAVE TO REFINE THIS)
 noncomputable def ω (z : ℂ) (γ : closed_curve) : ℂ :=
               1/(2*Real.pi*Complex.I) * ∫ t in I, (deriv γ t) / (γ t - z)
-  else -1
+
 
 -- TO DO: DEMOSTRAR CON ESTA DEFINICION QUE ES UN ENTERO
 
@@ -112,9 +112,8 @@ theorem ω_cont (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I, γ t ≠ z)
   intro z₀ hz₀
   unfold ω
   simp
-  intros x hx
-  simp_all
+  intro x hx
   sorry
-}
 
--- DISCRETE WINDING NUMBER??
+
+}
