@@ -100,19 +100,21 @@ open Classical
 
 -- We give the first def of Winding Number (HAVE TO REFINE THIS)
 noncomputable def ω (z : ℂ) (γ : closed_curve) : ℂ :=
-  if ∀ t ∈ I, γ t ≠ z then
               1/(2*Real.pi*Complex.I) * ∫ t in I, (deriv γ t) / (γ t - z)
-   else -1
+
 
 -- TO DO: DEMOSTRAR CON ESTA DEFINICION QUE ES UN ENTERO
 
 -- HAY QUE TRABAJAR EN ESTA PRUEBA; DEFINIR ARGUMENTO (PPAL?)?
 
-theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I, γ t ≠ z)
+theorem ω_cont (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I, γ t ≠ z)
 : ContinuousOn ω (univ \ (image γ I))  := by {
   intro z₀ hz₀
   unfold ω
+  simp
+  intro x hx
   sorry
+
 
 }
 
