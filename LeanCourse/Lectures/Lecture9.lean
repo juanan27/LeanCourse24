@@ -77,7 +77,7 @@ example (x : ℝ) : DifferentiableAt ℝ sin x :=
 
 #check HasDerivAt.add
 #check deriv_add
-#check DifferentiableAt.add
+#check DifferentiableAt
 
 
 example (x : ℝ) :
