@@ -116,16 +116,16 @@ theorem ω_cont (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I, γ t ≠ z)
   simp
   sorry
 }
-<<<<<<< HEAD
-=======
 
 
-theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I, γ t ≠ z)
+theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z)
 : ∃ n : ℤ, ω z γ = n := by {
   unfold ω
-  let g := fun t => ∫ s in (0)..(t), (deriv γ s) / (γ s - z)
-  have hg : ∀ t in Icc 0 1, deriv g t = (deriv γ s) / (γ s - z) := by sorry
+  let g := fun t : ℝ  => ∫ s in (0)..(t), (deriv γ s) / (γ s - z)
+  have hg : ∀ t : ℝ , deriv g t = (deriv γ t) / (γ t - z) := by {
+  intro t
   sorry
+  }
+
 }
 -- DISCRETE WINDING NUMBER??
->>>>>>> edfe0882821d2a43cea396f55781426b8b738dc1
