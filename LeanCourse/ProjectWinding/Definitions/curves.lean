@@ -33,9 +33,7 @@ open Set unitInterval Finset Metric
 
 structure curve where
  toFun : ℝ → ℂ
- diff_curve : DifferentiableOn ℝ toFun $ I
- cont_deriv : ContinuousOn (deriv toFun) $ I
-
+ class_c1 : ContDiffOn ℝ 1 toFun I
 
 -- It is sometimes useful to interpret curves as (ℝ → ℂ) maps
 instance : CoeFun curve fun _ => ℝ → ℂ := ⟨fun f => f.toFun⟩
@@ -43,11 +41,15 @@ instance : CoeFun curve fun _ => ℝ → ℂ := ⟨fun f => f.toFun⟩
 -- We'll make continuity and differentiability of curves explicit using Lemmas
 
 lemma curve.ContOn (γ : curve) : ContinuousOn γ I := by {
-  exact DifferentiableOn.continuousOn $ γ.diff_curve
-}
+  exact ContDiffOn.continuousOn γ.class_c1
+  }
+
 
 lemma curve.DiffOn (γ : curve) : DifferentiableOn ℝ γ I := by {
-  exact γ.diff_curve
+  apply ContDiffOn.differentiableOn γ.class_c1
+  simp
+
+
 }
 
 -- Let us now define the structure of a closed curve from the definition of curve. It inherits
@@ -121,11 +123,20 @@ theorem ω_cont (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I, γ t ≠ z)
 theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z)
 : ∃ n : ℤ, ω z γ = n := by {
   unfold ω
+  let g' := fun s : ℝ ↦ γ s - z
+  have hg' : ContinuousOn g' (I) := by {
+  simp_all only [ne_eq, g']
+  sorry
+  }
   let g := fun t : ℝ  => ∫ s in (0)..(t), (deriv γ s) / (γ s - z)
-  have hg : ∀ t : ℝ , deriv g t = (deriv γ t) / (γ t - z) := by {
+  let h := fun s : ℝ ↦ deriv γ s
+  have hg : ContinuousOn h (I) := by {
+  sorry
+  }
+  have hg'' : ∀ t ∈ I , deriv g t = (deriv γ t) / (γ t - z) := by {
   intro t
   sorry
   }
-
+  sorry
 }
 -- DISCRETE WINDING NUMBER??
