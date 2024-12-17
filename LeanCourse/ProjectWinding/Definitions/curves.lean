@@ -51,6 +51,10 @@ lemma curve.DiffOn (γ : curve) : DifferentiableOn ℝ γ I := by {
 
 
 }
+lemma curve.Cont_derivOn (γ : curve) : ContinuousOn (deriv γ) $ I := by {
+  sorry
+
+}
 
 -- Let us now define the structure of a closed curve from the definition of curve. It inherits
 -- continuity and differentiability
@@ -118,23 +122,35 @@ theorem ω_cont (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I, γ t ≠ z)
   simp
   sorry
 }
+theorem division_continuous (f : ℝ → ℂ ) (g : ℝ → ℂ ) (h : ContinuousOn f (I))
+(h' : ContinuousOn g (I)) (h_v : ∀ s ∈ I, g s ≠ 0) : ContinuousOn (fun s ↦ f s / g s) (I) := by {
+sorry
+}
 
+-- We prove now that the winding number is always an integer.
 
-theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z)
+theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I , γ t ≠ z)
 : ∃ n : ℤ, ω z γ = n := by {
   unfold ω
+  have hz : ContinuousOn (fun s : ℝ  ↦ z) (I) := by exact continuousOn_const
+  have hγ : ContinuousOn (fun s : ℝ ↦ γ s) (I) := by exact curve.ContOn γ.tocurve
   let g' := fun s : ℝ ↦ γ s - z
   have hg' : ContinuousOn g' (I) := by {
   simp_all only [ne_eq, g']
-  sorry
+  exact ContinuousOn.sub hγ hz
   }
   let g := fun t : ℝ  => ∫ s in (0)..(t), (deriv γ s) / (γ s - z)
-  let h := fun s : ℝ ↦ deriv γ s
-  have hg : ContinuousOn h (I) := by {
-  sorry
+  let h' := fun s : ℝ ↦ deriv γ s
+  have hg : ContinuousOn h' (I) := by {
+  exact curve.Cont_derivOn γ.tocurve
+  }
+  have h_vanish : ∀ s ∈ I, g' s ≠ 0 := by exact fun s a ↦ sub_ne_zero_of_ne (h s a)
+  let φ := fun s : ℝ ↦ (h' s / g' s)
+  have h_cont : ContinuousOn φ (I) := by {
+    exact division_continuous h' g' hg hg' h_vanish
   }
   have hg'' : ∀ t ∈ I , deriv g t = (deriv γ t) / (γ t - z) := by {
-  intro t
+  intro t ht
   sorry
   }
   sorry
