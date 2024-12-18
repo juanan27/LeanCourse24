@@ -14,8 +14,18 @@ import Mathlib.Analysis.Calculus.Deriv.Comp
 import Mathlib.Topology.ContinuousOn
 import Mathlib.Order.Interval.Basic
 import Mathlib.Topology.UnitInterval
-
+--import LeanCourse.Common
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.Deriv
+import Mathlib.Analysis.Calculus.Deriv.Prod
+import Mathlib.Analysis.Calculus.Deriv.Pow
+import Mathlib.Analysis.SpecialFunctions.Integrals
+import Mathlib.Analysis.Convolution
+import Mathlib.Data.Real.Irrational
+import Mathlib.MeasureTheory.Function.Jacobian
 open DifferentiableOn Finset
+open BigOperators Function Set Real Topology Filter
+open MeasureTheory Interval Convolution ENNReal
+
 /- In this document we present some basic definitions of the winding number around a point x
 Intuitively, for an oriented closed curve γ, we can define it as
 
@@ -53,7 +63,6 @@ lemma curve.DiffOn (γ : curve) : DifferentiableOn ℝ γ I := by {
 }
 lemma curve.Cont_derivOn (γ : curve) : ContinuousOn (deriv γ) $ I := by {
   sorry
-
 }
 
 -- Let us now define the structure of a closed curve from the definition of curve. It inherits
@@ -124,12 +133,20 @@ theorem ω_cont (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I, γ t ≠ z)
 }
 theorem division_continuous (f : ℝ → ℂ ) (g : ℝ → ℂ ) (h : ContinuousOn f (I))
 (h' : ContinuousOn g (I)) (h_v : ∀ s ∈ I, g s ≠ 0) : ContinuousOn (fun s ↦ f s / g s) (I) := by {
-sorry
+apply h.div
+exact h'
+exact fun x a ↦ h_v x a
 }
 
-example (f : ℝ → ℝ) (hf : Continuous f) (a b : ℝ) :
+lemma ftc (f : ℝ → ℂ) (hf : Continuous f) (a b : ℝ) :
     deriv (fun u ↦ ∫ x : ℝ in a..u, f x) b = f b :=
   (hf.integral_hasStrictDerivAt a b).hasDerivAt.deriv
+lemma ftc_2 (f : ℝ → ℂ) (hf : ContinuousOn f (I))
+    (g : ℝ → ℂ := fun u ↦ ∫ x : ℝ in (0)..u, f x) : ∀ b ∈ I, deriv g b = f b :=
+  by {
+    intro b hb
+    sorry
+  }
 
 -- We prove now that the winding number is always an integer.
 
@@ -153,10 +170,13 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I , γ t ≠ z)
   have h_cont : ContinuousOn φ (I) := by {
     exact division_continuous h' g' hg hg' h_vanish
   }
-  have hg'' : ∀ t ∈ I , deriv g t = (deriv γ t) / (γ t - z) := by {
+  have hg'' : ∀ t ∈ I, deriv g t = (deriv γ t) / (γ t - z) := by {
   intro t ht
-  sorry
+  apply ftc_2
+  · exact h_cont
+  · exact ht
   }
   sorry
 }
 -- DISCRETE WINDING NUMBER??
+#check constant_of_derivWithin_zero
