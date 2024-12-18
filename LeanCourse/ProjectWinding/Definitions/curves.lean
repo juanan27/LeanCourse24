@@ -14,7 +14,6 @@ import Mathlib.Analysis.Calculus.Deriv.Comp
 import Mathlib.Topology.ContinuousOn
 import Mathlib.Order.Interval.Basic
 import Mathlib.Topology.UnitInterval
---import LeanCourse.Common
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Deriv
 import Mathlib.Analysis.Calculus.Deriv.Prod
 import Mathlib.Analysis.Calculus.Deriv.Pow
@@ -141,6 +140,7 @@ exact fun x a ↦ h_v x a
 lemma ftc (f : ℝ → ℂ) (hf : Continuous f) (a b : ℝ) :
     deriv (fun u ↦ ∫ x : ℝ in a..u, f x) b = f b :=
   (hf.integral_hasStrictDerivAt a b).hasDerivAt.deriv
+
 lemma ftc_2 (f : ℝ → ℂ) (hf : ContinuousOn f (I))
     (g : ℝ → ℂ := fun u ↦ ∫ x : ℝ in (0)..u, f x) : ∀ b ∈ I, deriv g b = f b :=
   by {
