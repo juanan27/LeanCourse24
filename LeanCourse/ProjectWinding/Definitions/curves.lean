@@ -127,6 +127,10 @@ theorem division_continuous (f : ℝ → ℂ ) (g : ℝ → ℂ ) (h : Continuou
 sorry
 }
 
+example (f : ℝ → ℝ) (hf : Continuous f) (a b : ℝ) :
+    deriv (fun u ↦ ∫ x : ℝ in a..u, f x) b = f b :=
+  (hf.integral_hasStrictDerivAt a b).hasDerivAt.deriv
+
 -- We prove now that the winding number is always an integer.
 
 theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I , γ t ≠ z)
