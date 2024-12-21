@@ -61,6 +61,7 @@ lemma curve.DiffOn (γ : curve) : DifferentiableOn ℝ γ I := by {
 
 }
 lemma curve.Cont_derivOn (γ : curve) : ContinuousOn (deriv γ) $ I := by {
+  apply ContDiffOn.continuousOn_derivWithin
   sorry
 }
 
