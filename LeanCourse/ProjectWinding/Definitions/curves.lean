@@ -42,7 +42,8 @@ open Set unitInterval Finset Metric
 
 structure curve where
  toFun : ℝ → ℂ
- class_c1 : ContDiffOn ℝ 1 toFun I
+ diff_curve : DifferentiableOn ℝ toFun $ I
+ cont_deriv : ContinuousOn (deriv toFun) $ I
 
 -- It is sometimes useful to interpret curves as (ℝ → ℂ) maps
 instance : CoeFun curve fun _ => ℝ → ℂ := ⟨fun f => f.toFun⟩
@@ -50,24 +51,20 @@ instance : CoeFun curve fun _ => ℝ → ℂ := ⟨fun f => f.toFun⟩
 -- We'll make continuity and differentiability of curves explicit using Lemmas
 
 lemma curve.ContOn (γ : curve) : ContinuousOn γ I := by {
-  exact ContDiffOn.continuousOn γ.class_c1
+  exact DifferentiableOn.continuousOn $ γ.diff_curve
   }
 
 
 lemma curve.DiffOn (γ : curve) : DifferentiableOn ℝ γ I := by {
-  apply ContDiffOn.differentiableOn γ.class_c1
-  simp
+  exact γ.diff_curve
 
 
 }
 
-lemma curve.Cont_derivWithin (γ : curve) : ContinuousOn (derivWithin γ I) I := by {
- exact ContDiffOn.continuousOn_derivWithin γ.class_c1 (uniqueDiffOn_Icc_zero_one) (le_refl 1)
-}
+
 
 lemma curve.Cont_derivOn (γ : curve) : ContinuousOn (deriv γ) $ I := by {
-  apply ContDiffOn.continuousOn_derivWithin
-  sorry
+  exact γ.cont_deriv
 }
 
 -- Let us now define the structure of a closed curve from the definition of curve. It inherits
