@@ -153,6 +153,11 @@ lemma ftc_2 (f : ℝ → ℂ) (hf : ContinuousOn f (I))
 
 -- We prove now that the winding number is always an integer.
 
+lemma exp_one (z : ℂ) (h_1 : Complex.exp z = 1) : ∃ k : ℤ, z = 2 * Real.pi * k * Complex.I := by {
+  sorry
+  }
+
+
 theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I , γ t ≠ z)
 : ∃ n : ℤ, ω z γ = n := by {
   unfold ω
@@ -184,8 +189,69 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I , γ t ≠ z)
   have deriv₀ : ∀ t ∈ I, deriv ψ t = 0 := by {
     intro t ht
     sorry
+    }
+  -- We define the following function ϕ in order to use the lemma is_const_of_deriv_eq_zero
+  let ϕ (x : ℝ) : ℂ :=
+  if x < 0 then ψ 0  -- If x is less than 0, ϕ(x) = ψ(0)
+  else if x > 1 then ψ 1  -- If x is greater than 1, ϕ(x) = ψ(1)
+  else ψ x  -- If x is in [0, 1], ϕ(x) = ψ(x)
+  have hϕ : Differentiable ℝ ϕ := by sorry
+  have hϕ' : ∀ (x : ℝ), deriv ϕ x = 0 := by sorry
+  have const_ϕ : ∀ x y : ℝ, ϕ x = ϕ y := is_const_of_deriv_eq_zero hϕ hϕ'
+  have coincide_ϕ : ϕ 0 = ϕ 1 := by exact const_ϕ 0 1
+  have coincide_ψ : ψ 0 = ψ 1 := by sorry -- this is trivial by definition of ϕ
+  simp_rw[ψ] at coincide_ψ
+  have hψ₀ : ψ 0 = γ.toFun 0 - z := by sorry
+  have hψ₁ : ψ 1 = Complex.exp (-g 1) * (γ.toFun 0 - z) := by simp[γ.closed]
+  have h_simp : (γ.toFun 0 - z) = Complex.exp (-g 1) * (γ.toFun 0 - z)  := by {
+    nth_rewrite 1 [← hψ₀]; rw[← hψ₁]; exact coincide_ψ
   }
-  sorry
+  have hexp: Complex.exp (-g 1) = 1 := by {
+    have h_dist : γ.toFun 0 ≠ z := by {
+      specialize h 0
+      have h_0 : 0 ∈ I := by exact unitInterval.zero_mem
+      exact h h_0
+    }
+    have h_distinct : γ.toFun 0 - z ≠ 0 := by exact sub_ne_zero_of_ne h_dist
+    simp[h_distinct] at h_simp
+    exact h_simp
+  }
+  have h_g : ∃ n : ℤ, -g 1 = 2 * Real.pi * n * Complex.I := by {
+    exact exp_one (z := -g 1) (h_1 := hexp)
+  }
+  simp_rw[g] at *
+  have h_minus : ∃ n : ℤ, ∫ (s : ℝ) in (0).. 1, deriv γ.toFun s / (γ.toFun s - z) = 2 * ↑π * ↑n * Complex.I := by {
+    obtain ⟨k, hk⟩ := h_g
+    use -k
+    push_cast
+    simp[hk]
+    rw[← hk]
+    ring
+  }
+  obtain ⟨m, hm⟩ := h_minus
+  -- It is sufficient to prove the following:
+  have hsuff : ∃ n : ℤ, ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - z) = 2 * Real.pi * ↑n * Complex.I := by {
+    have h_eq : ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - z) = ∫ (t : ℝ) in (0)..1, deriv γ.toFun t / (γ.toFun t - z) := by {
+      rw [intervalIntegral.integral_of_le]
+      have h': [[0, 1]] = I:= by refine uIcc_of_le ?h; linarith
+      rw[← h']
+      simp[Eq.symm integral_Icc_eq_integral_Ioc]
+      linarith
+    }
+    use m
+    simp[h_eq, hm]
+    }
+  have not_zero : (2 * ↑π * Complex.I) ≠ 0 := by {
+    simp
+    exact pi_ne_zero
+  }
+  field_simp[hsuff, not_zero]
+  have h_equal : ∀ n : ℤ, (n : ℂ) * (2 * ↑π * Complex.I) = 2 * ↑π * (n:ℂ ) * Complex.I := by {
+    intro n
+    ring
+  }
+  simp[h_equal]
+  exact hsuff
 }
 -- DISCRETE WINDING NUMBER??
 #check constant_of_derivWithin_zero
