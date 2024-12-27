@@ -201,7 +201,14 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I , γ t ≠ z)
   have coincide_ϕ : ϕ 0 = ϕ 1 := by exact const_ϕ 0 1
   have coincide_ψ : ψ 0 = ψ 1 := by sorry -- this is trivial by definition of ϕ
   simp_rw[ψ] at coincide_ψ
-  have hψ₀ : ψ 0 = γ.toFun 0 - z := by sorry
+  have hψ₀ : ψ 0 = γ.toFun 0 - z := by {
+    have hg_0 : g 0 = 0 := by exact intervalIntegral.integral_same
+    have hg__0 : -g 0 = 0 := by simp[hg_0]
+    have exp_g : Complex.exp (-g 0) = 1 := by simp[hg__0]
+    simp_rw[ψ]
+    simp_rw[exp_g]
+    simp
+  }
   have hψ₁ : ψ 1 = Complex.exp (-g 1) * (γ.toFun 0 - z) := by simp[γ.closed]
   have h_simp : (γ.toFun 0 - z) = Complex.exp (-g 1) * (γ.toFun 0 - z)  := by {
     nth_rewrite 1 [← hψ₀]; rw[← hψ₁]; exact coincide_ψ
