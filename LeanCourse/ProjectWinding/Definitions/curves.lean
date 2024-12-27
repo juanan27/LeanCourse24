@@ -149,7 +149,8 @@ lemma ftc_2 (f : ℝ → ℂ) (hf : ContinuousOn f (I))
   by {
     intro b hb
     sorry
-  }
+    }
+
 
 -- We prove now that the winding number is always an integer.
 
@@ -190,37 +191,7 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I , γ t ≠ z)
     intro t ht
     sorry
     }
-  -- We define the following function ϕ in order to use the lemma is_const_of_deriv_eq_zero
-  let ϕ (x : ℝ) : ℂ :=
-  if x < 0 then ψ 0  -- If x is less than 0, ϕ(x) = ψ(0)
-  else if x > 1 then ψ 1  -- If x is greater than 1, ϕ(x) = ψ(1)
-  else ψ x  -- If x is in [0, 1], ϕ(x) = ψ(x)
-  have ψ_diff : DifferentiableOn ℝ ψ I := by {
-    simp_rw[ψ]
-    refine mul ?ha ?hb
-    · refine cexp ?ha.hc
-      refine differentiableOn_neg_iff.mpr ?ha.hc.a
-      sorry
-    · refine sub_const ?hb.hf z
-      exact curve.DiffOn γ.tocurve
-  }
-  have hϕ : Differentiable ℝ ϕ := by {
-    sorry
-  }
-  have hϕ' : ∀ (x : ℝ), deriv ϕ x = 0 := by sorry
-  have const_ϕ : ∀ x y : ℝ, ϕ x = ϕ y := is_const_of_deriv_eq_zero hϕ hϕ'
-  have coincide_ϕ : ϕ 0 = ϕ 1 := by exact const_ϕ 0 1
-  have coincide_ψ : ψ 0 = ψ 1 := by {
-    have hco : ψ 0 = ϕ 0 := by {
-      simp_rw[ϕ]
-      norm_num -- should be immediate by definition
-    }
-    have hco1 : ψ 1 = ϕ 1 := by {
-      simp_rw[ϕ]
-      norm_num
-    }
-    simp[hco, hco1, coincide_ϕ]
-  } -- this is trivial by definition of ϕ
+  have coincide_ψ : ψ 0 = ψ 1 := by sorry
   simp_rw[ψ] at coincide_ψ
   have hψ₀ : ψ 0 = γ.toFun 0 - z := by {
     have hg_0 : g 0 = 0 := by exact intervalIntegral.integral_same
@@ -283,3 +254,4 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I , γ t ≠ z)
 }
 -- DISCRETE WINDING NUMBER??
 #check constant_of_derivWithin_zero
+#check Continuous.deriv_integral
