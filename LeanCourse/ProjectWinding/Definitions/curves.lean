@@ -179,6 +179,12 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I , γ t ≠ z)
   · exact h_cont
   · exact ht
   }
+  let ψ : ℝ → ℂ := fun t ↦ Complex.exp (-g t ) * (γ t - z)
+
+  have deriv₀ : ∀ t ∈ I, deriv ψ t = 0 := by {
+    intro t ht
+    sorry
+  }
   sorry
 }
 -- DISCRETE WINDING NUMBER??
