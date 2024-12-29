@@ -108,12 +108,18 @@ lemma ftc_2 (f : ℝ → ℂ) (hf : ContinuousOn f (I))
     }
 
 
--- We prove now that the winding number is always an integer.
+-- We prove now that the winding number is always an integer. We introduce the following lemma:
 
 lemma exp_one (z : ℂ) (h_1 : Complex.exp z = 1) : ∃ k : ℤ, z = 2 * Real.pi * k * Complex.I := by {
-  sorry
+  have h : Complex.exp z = 1 → ∃ n : ℤ , z = n * (2 * ↑π * Complex.I) := by exact Complex.exp_eq_one_iff.1
+  have h' : ∃ n : ℤ , z = ↑n * (2 * ↑π * Complex.I) := h h_1
+  obtain ⟨ n, hn ⟩ := h'
+  use n
+  simp[hn]
+  ring
   }
 
+-- We are ready to show ω is an integer
 
 theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I , γ t ≠ z)
 : ∃ n : ℤ, ω z γ = n := by {
