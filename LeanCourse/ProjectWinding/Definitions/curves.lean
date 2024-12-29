@@ -92,8 +92,9 @@ structure piecewiseCurve (n : ℕ) where
 instance : Coe curve (piecewiseCurve 1) where
   coe := fun c => {curves := fun 0 => c}
 
--- Now, we define the concatenation of piecewise curves. If γ is a piecewise curve formed by n curves
--- and ψ is a piecewise curve formed by m, the γψ is a piecewise curve with (n + m) curves
+/- Now, we define the concatenation of piecewise curves. If γ is a piecewise curve formed by n curves
+ and ψ is a piecewise curve formed by m, the γψ is a piecewise curve with (n + m) curves -/
+
 
 def concatenationOfCurves {n m : ℕ} (γ : piecewiseCurve n) (ψ : piecewiseCurve m) : piecewiseCurve (n + m) :=
   {curves := fun i => by
@@ -108,5 +109,20 @@ def concatenationOfCurves {n m : ℕ} (γ : piecewiseCurve n) (ψ : piecewiseCur
       exact i.isLt
   }
 
--- Anyways, we will potentially make use of closed_curves. The definition of piecewise curves is given
--- in case we need it later
+/- Anyways, we will potentially make use of closed_curves. The definition of piecewise curves is given
+ in case we need it later -/
+
+-- We give the first def of Winding Number
+
+noncomputable def ω (z : ℂ) (γ : closed_curve) : ℂ :=
+              1/(2*Real.pi*Complex.I) *  ∫ t in I, (deriv γ t) / (γ t - z)
+
+-- Now we define the interior and exterior of a curve using the winding number (by a proven lemma, ω is always an integer)
+
+def interiorOfClosedCurve (γ : closed_curve) : Set ℂ := {z : ℂ | ω z γ ≠ 0 ∧ z ∉ γ '' I}
+
+def exteriorOfClosedCurve (γ : closed_curve) : Set ℂ := {z : ℂ | ω z γ = 0 ∧ z ∉ γ '' I}
+
+-- For completeness we also include the definition for the image of a closed curve
+
+def imageOfClosedCurve (γ : closed_curve) : Set ℂ := {z : ℂ | z ∈ γ '' I}

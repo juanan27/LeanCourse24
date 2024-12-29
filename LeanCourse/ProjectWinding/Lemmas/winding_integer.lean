@@ -34,9 +34,51 @@ noncomputable section
 
 open Classical
 
--- We give the first def of Winding Number (HAVE TO REFINE THIS)
-noncomputable def ω (z : ℂ) (γ : closed_curve) : ℂ :=
-              1/(2*Real.pi*Complex.I) *  ∫ t in I, (deriv γ t) / (γ t - z)
+-- We can see the complex plane divided by the interior, exterior and image of any closed curve:
+
+lemma interior_exterior_OfClosedCurve_whole_plane (γ : closed_curve) :
+∀ z : ℂ, z ∈ interiorOfClosedCurve γ ∪ exteriorOfClosedCurve γ ∪ imageOfClosedCurve γ := by {
+  intro z
+  by_cases h : z ∈ γ '' I
+  · exact Set.mem_union_right (interiorOfClosedCurve γ ∪ exteriorOfClosedCurve γ) h
+  · by_cases h₀ : ω z γ = 0
+    · have h₀' : z ∈ exteriorOfClosedCurve γ := by {
+      unfold exteriorOfClosedCurve
+      simp only [Set.mem_Icc, not_exists, not_and, and_imp, mem_setOf_eq]
+      trivial
+      }
+      simp[h₀']
+    · have h₀' : z ∈ interiorOfClosedCurve γ := by {
+      unfold interiorOfClosedCurve
+      simp only [Set.mem_Icc, not_exists, not_and, and_imp, mem_setOf_eq]
+      trivial}
+      simp[h₀']
+
+}
+
+lemma disjoint_interior_exterior_OfClosedCurve (γ : closed_curve):
+interiorOfClosedCurve γ ∩ exteriorOfClosedCurve γ ∩ imageOfClosedCurve γ = ∅ := by {
+  ext z
+  simp only [mem_inter_iff, mem_empty_iff_false, iff_false, not_and, and_imp]
+  intro h₀ h₁
+  exfalso
+  have h0 : ω z γ = 0 := by {
+    unfold exteriorOfClosedCurve at *
+    have haux : ω z γ = 0 ∧ z ∉ γ.toFun '' I := by exact h₁
+    obtain ⟨hp, hq⟩ := haux
+    exact hp
+  }
+  have h1 : ω z γ ≠ 0 := by {
+    unfold interiorOfClosedCurve at *
+    have haux : ω z γ ≠  0 ∧ z ∉ γ.toFun '' I := by exact h₀
+    obtain ⟨hp, hq⟩ := haux
+    exact hp
+  }
+  contradiction
+}
+
+
+-- The index function is continuous
 
 theorem ω_cont (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I, γ t ≠ z)
 : ContinuousOn ω (univ \ (image γ I))  := by {
@@ -45,7 +87,7 @@ theorem ω_cont (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I, γ t ≠ z)
   simp
   intro x hx
   simp
-  sorry -- This is not used for the rest
+  sorry
 }
 theorem division_continuous (f : ℝ → ℂ ) (g : ℝ → ℂ ) (h : ContinuousOn f (I))
 (h' : ContinuousOn g (I)) (h_v : ∀ s ∈ I, g s ≠ 0) : ContinuousOn (fun s ↦ f s / g s) (I) := by {
@@ -126,8 +168,8 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I , γ t ≠ z)
         }
     _ = -Complex.exp (- ∫ s in (0)..t, deriv γ s / (γ s - z)) * deriv γ t
         + Complex.exp (- ∫ s in (0)..t, deriv γ s / (γ s - z)) * deriv γ t := by {
-          have h1 : (deriv γ t / (γ t - z)) * (γ t - z) = deriv γ t := by {exact
-            div_mul_cancel (deriv γ.toFun t) (h_vanish t ht)}
+          have h1 : (deriv γ t / (γ t - z)) * (γ t - z) = deriv γ t := by {exact div_mul_cancel₀ (deriv γ.toFun t) (h_vanish t ht)}
+          sorry
         }
     _ = 0 := by ring
     }
