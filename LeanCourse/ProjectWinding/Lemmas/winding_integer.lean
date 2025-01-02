@@ -153,9 +153,12 @@ lemma ftc (f : ℝ → ℂ) (hf : Continuous f) (a b : ℝ) :
   (hf.integral_hasStrictDerivAt a b).hasDerivAt.deriv
 
 lemma ftc_2 (f : ℝ → ℂ) (hf : ContinuousOn f (I))
-    (g : ℝ → ℂ := fun u ↦ ∫ x : ℝ in (0)..u, f x) : ∀ b ∈ I, deriv g b = f b :=
+    (g := fun u ↦ ∫ x : ℝ in (0)..u, f x) : ∀ b ∈ I, deriv g b = f b :=
   by {
     intro b hb
+    have h_deriv : HasDerivAt g (f b) b := by {
+      sorry
+    }
     sorry
     }
 
@@ -213,32 +216,67 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I , γ t ≠ z)
               φ, g]
             have h_diff := γ.diff_curve
             have hI : t ∈ I := by exact ht
-            have hNeigh : I ∈ nhds t := by sorry
+            have hNeigh : I ∈ nhds t := by sorry -- would be ideal to use DifferentiableOn.differentiableAt
             exact DifferentiableOn.differentiableAt h_diff hNeigh
           }
           apply deriv_mul
-          sorry
-          sorry
+          · have haux : DifferentiableAt ℝ (fun y ↦ - ∫ (s : ℝ) in (0)..y, deriv γ.toFun s / (γ.toFun s - z)) t := by {
+            simp_all only [and_imp, differentiableAt_const, DifferentiableAt.sub_iff_left,
+              differentiableAt_neg_iff, g', h', φ, g]
+            have hintg : ∀ t ∈ I, IntervalIntegrable (fun t => deriv γ.toFun t / (γ.toFun t - z)) MeasureTheory.volume (0) t := by {
+              intro t ht
+              apply ContinuousOn.intervalIntegrable
+              have h_sub : Icc 0 t ⊆ I := by {
+                intro x hx
+                obtain ⟨h₀, h₁⟩ := hx
+                have h₂ : t ≤ 1 := by simp_all only [Set.mem_Icc, ne_eq, and_imp]
+                have h₃ : 0 ≤ t := by simp_all only [Set.mem_Icc, ne_eq, and_imp, and_true]
+                have h₄ : x ≤ 1 := by exact le_trans h₁ h₂
+                simp_all only [Set.mem_Icc, ne_eq, and_imp, and_self]
+              }
+              rename_i ht_1
+              simp_all only [Set.mem_Icc, ne_eq, and_imp, Set.uIcc_of_le]
+              exact h_cont.mono h_sub
+            }
+            sorry
         }
-    _ = (- Complex.exp (- ∫ s in (0)..t, deriv γ s / (γ s - z)) * (deriv γ t / (γ t - z))) * (γ t - z)
+    _ = - Complex.exp (- ∫ s in (0)..t, deriv γ s / (γ s - z)) * deriv γ t / (γ t   - z) * (γ t - z)
         + Complex.exp (- ∫ s in (0)..t, deriv γ s / (γ s - z)) * deriv γ t := by {
           sorry
         }
     _ = -Complex.exp (- ∫ s in (0)..t, deriv γ s / (γ s - z)) * deriv γ t
         + Complex.exp (- ∫ s in (0)..t, deriv γ s / (γ s - z)) * deriv γ t := by {
-          have h1 : (deriv γ t / (γ t - z)) * (γ t - z) = deriv γ t := by {exact div_mul_cancel₀ (deriv γ.toFun t) (h_vanish t ht)}
-          sorry
+          rw [div_mul_cancel₀
+              (-Complex.exp (-∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) *
+                deriv γ.toFun t)
+              (h_vanish t ht)]
         }
     _ = 0 := by ring
     }
   have coincide_ψ : ψ 0 = ψ 1 := by {
-    have h_const : ∀ t ∈ Set.Icc 0 1, ψ t = ψ 0 := by {
-    intro t ht
-
-    --let h_const := funext (λ t ↦ deriv₀ t (Set.mem_Icc.mpr ⟨le_of_lt ?_, le_of_lt ?_⟩))
-    --calc
-      --ψ 0 = ψ 1 := by rw [h_const]
-  }
+    have h_cont : ContinuousOn (fun t ↦ deriv γ.toFun t / (γ.toFun t - z)) I := by sorry
+    have hcont : ContinuousOn ψ I := by {
+      refine ContinuousOn.mul ?_ ?_
+      · have hF : ContinuousOn (fun t ↦ -∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) I := by {
+        apply ContinuousOn.neg
+        sorry
+        }
+        exact ContinuousOn.cexp hF
+      · exact ContinuousOn.sub hγ (continuousOn_const)
+    }
+    have hderiv : ∀ t ∈ Set.Ico 0 1, HasDerivWithinAt ψ 0 (Set.Ici t) t := by {
+      intro t ht
+      have htt : t ∈ I := by exact mem_Icc_of_Ico ht
+      have h_deriv : deriv ψ t = 0 := deriv₀ t htt
+      obtain ⟨h₁, h₂⟩ := ht
+      sorry
+    }
+    have h_const : ∀ x ∈ Set.Icc 0 1, ψ x = ψ 0 := by {
+      intro x hx
+      exact constant_of_has_deriv_right_zero hcont hderiv x hx
+    }
+    simp_all only [Set.mem_Icc, ne_eq, and_imp, intervalIntegral.integral_same, neg_zero, Complex.exp_zero, one_mul,
+      le_refl, zero_le_one, g', h', φ, g, ψ]
   }
 
   simp_rw[ψ] at coincide_ψ
