@@ -364,10 +364,22 @@ lemma contour_integral_eq_curve_integral_15 (γ : closed_curve) (h_circle : Circ
     rw[circleIntegral_def_Icc]
     unfold circleMap
     simp
+    have h_circle_1 : ∀ θ ∈ I, γ θ = Complex.exp (2*π*Complex.I * θ) := by {
+      intro t
+      rw[h_circle]
+      simp
+    }
+    have h_circle_2 : ∀ θ ∈ I, γ θ = Complex.exp (Complex.I*2*π*θ) := by {
+      intro θ hθ
+      specialize h_circle_1 θ hθ
+      norm_num[h_circle_1]
+      ring_nf
+    }
     have hsubs : ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - z) = ∫ (t : ℝ) in I, deriv γ.toFun t / (cexp («I» * 2 * ↑π * ↑t) - z) := by {
       refine setIntegral_congr_ae₀ ?hs ?h -- should be easy to show
       · exact nullMeasurableSet_Icc
-      · have haux : ∀ x ∈ I, deriv γ.toFun x / (γ.toFun x - z) = deriv γ.toFun x / (cexp («I» * 2 * ↑π * ↑x) - z) := by exact fun x a ↦ congrArg (HDiv.hDiv (deriv γ.toFun x)) (congrFun (congrArg HSub.hSub (h_circle x a)) z)
+      · have haux : ∀ x ∈ I, deriv γ.toFun x / (γ.toFun x - z) = deriv γ.toFun x / (cexp («I» * 2 * ↑π * ↑x) - z) := by
+          exact fun x a ↦ congrArg (HDiv.hDiv (deriv γ.toFun x)) (congrFun (congrArg HSub.hSub (h_circle_2 x a)) z)
         exact ae_of_all volume haux
     }
     rw[hsubs]
@@ -397,36 +409,58 @@ lemma contour_integral_eq_curve_integral_15 (γ : closed_curve) (h_circle : Circ
       specialize h_deriv_1 θ hθ
       exact HasDerivAt.deriv h_deriv_1
     }
+    have h_deriv_1'' : ∀ θ ∈ Set.Icc 0 (2*π), deriv (fun θ ↦ cexp (↑θ * «I»)) θ * ((cexp (↑θ * «I»)) - z)⁻¹
+    = Complex.I * cexp (↑θ * «I») * ((cexp (↑θ * «I»)) - z)⁻¹ := by {
+      intro θ hθ
+      specialize h_deriv_1' θ hθ
+      rw[h_deriv_1']
+    }
     have hI : I = Set.Icc 0 1 := by exact rfl
     have h_deriv_2 : ∀ t : ℝ, HasDerivAt (fun t ↦ γ.toFun t) ((«I» * 2 * ↑π ) * cexp («I» * 2 * ↑π * ↑t)) t := by {
       intro t
       specialize h_all t («I» * 2 * ↑π )
       rw[h_circle]
       simp
-      norm_num
-      sorry
+      have haux : ∀ t : ℝ, 2 * ↑π * «I» * ↑t = ↑t * («I» * 2 * ↑π) := by {
+        intro t
+        ring
       }
-    have h_deriv_25 : ∀ t ∈ I, HasDerivAt (fun t ↦ γ.toFun t) ((«I» * 2 * ↑π ) * cexp («I» * 2 * ↑π * ↑t)) t := by exact fun t a ↦ h_deriv_2 t
+      have haux' : (fun (t : ℝ ) ↦ cexp (2 * ↑π * «I» * ↑t)) = (fun (x : ℝ ) ↦ cexp (↑x * («I» * 2 * ↑π))) := by {
+        ext t
+        specialize haux t
+        rw[haux]
+      }
+      repeat rw[haux']
+      have haux'' : ∀ t : ℝ, (↑t * («I» * 2 * ↑π)) = («I» * 2 * ↑π * ↑t) := by {
+        intro t
+        ring
+      }
+      exact  HasDerivAt.congr_deriv h_all (congrArg (HMul.hMul («I» * 2 * ↑π)) (congrArg cexp (haux'' t)))
+      }
+    have h_deriv2 : ∀ t ∈ I, HasDerivAt (fun t ↦ γ.toFun t) ((«I» * 2 * ↑π ) * cexp («I» * 2 * ↑π * ↑t)) t := by exact fun t a ↦ h_deriv_2 t
     have h_deriv_2': ∀ t ∈ I, deriv (fun t ↦ γ.toFun t) t = ((«I» * 2 * ↑π ) * cexp («I» * 2 * ↑π * ↑t)) := by {
         intro t ht
-        specialize h_deriv_25 t ht
-        exact HasDerivAt.deriv h_deriv_25
+        specialize h_deriv2 t ht
+        exact HasDerivAt.deriv h_deriv2
     }
-    have h_deriv_2'' : ∀ t ∈ I, deriv (fun t ↦ γ.toFun t) t / ((cexp («I» * 2 * ↑π * ↑t) - z)) = ((«I» * 2 * ↑π ) * cexp («I» * 2 * ↑π * ↑t)) / ((cexp («I» * 2 * ↑π * ↑t) - z)) := by {
+    have h_deriv_2'' : ∀ t ∈ I, deriv (fun t ↦ γ.toFun t) t / (cexp («I» * 2 * ↑π * ↑t) - z) = ((«I» * 2 * ↑π ) * cexp («I» * 2 * ↑π * ↑t)) / ((cexp («I» * 2 * ↑π * ↑t) - z)) := by {
       exact fun t a ↦ congrFun (congrArg HDiv.hDiv (h_deriv_2' t a)) (cexp («I» * 2 * ↑π * ↑t) - z)
     }
+    have hmeasur : MeasurableSet (Set.Icc 0 (2*π)) := by measurability
+    have hmeasI : MeasurableSet I := by measurability
+
     have h_int_eq_1 :  ∫ (θ : ℝ) in Set.Icc 0 (2 * π), deriv (fun θ ↦ cexp (↑θ * «I»)) θ * ((cexp (↑θ * «I»)) - z)⁻¹
     = ∫ (θ : ℝ) in Set.Icc 0 (2 * π), (Complex.I * cexp (↑θ * «I»)) * ((cexp (↑θ * «I»)) - z)⁻¹ := by {
-      sorry
+      exact setIntegral_congr hmeasur h_deriv_1''
     }
     have h_int_eq_2 : ∫ (t : ℝ) in I, deriv γ.toFun t / (cexp («I» * 2 * ↑π * ↑t) - z) = ∫ (t : ℝ) in I, ((«I» * 2 * ↑π ) * cexp («I» * 2 * ↑π * ↑t)) / ((cexp («I» * 2 * ↑π * ↑t) - z)) := by {
-      sorry
+      exact setIntegral_congr hmeasI h_deriv_2''
     }
     rw[h_int_eq_1, h_int_eq_2]
     field_simp
     -- All left is to do a change of variables.
     let f : ℝ → ℝ := fun x ↦ (2*π)*x
-    have hmeasI : MeasurableSet I := by exact measurableSet_Icc
+
     have hf₁ : InjOn f I := by {
       unfold InjOn
       intro x hx y hy
@@ -501,7 +535,7 @@ lemma contour_integral_eq_curve_integral_15 (γ : closed_curve) (h_circle : Circ
     }
     rw[← hfeq]
     apply Eq.symm
-    have hinteq : ∫ (θ : ℝ) in f '' I, «I» * cexp (↑θ * «I») / (cexp (↑θ * «I») - z) = ∫ (θ : ℝ) in f '' I, g₁ θ := by sorry -- should be easy
+    have hinteq : ∫ (θ : ℝ) in f '' I, «I» * cexp (↑θ * «I») / (cexp (↑θ * «I») - z) = ∫ (θ : ℝ) in f '' I, g₁ θ := by norm_num -- should be easy
     rw[hinteq]
     simp[integral_image_eq_integral_abs_deriv_smul (f := f) (f' := f') (hf := hf₁) (hf' := hf') (g := g₁)]
     simp_rw[f, g₁, f']
@@ -527,22 +561,30 @@ lemma contour_integral_eq_curve_integral_175 (γ : closed_curve) (h_circle : ∀
     sorry
   }
   have gdiff' : DifferentiableOn ℝ g I := by exact Differentiable.differentiableOn gdiff
-  have g'cont : ContinuousOn (deriv g) $ I := by sorry
+  have deriv_g : deriv g = fun (θ : ℝ) ↦ (2*π*Complex.I) *Complex.exp (2*π*Complex.I*θ) := by sorry
+  have g'cont : ContinuousOn (deriv g) $ I := by {
+    simp_rw[deriv_g]
+    fun_prop
+  }
   have g0g1 : g 0 = g 1 := by {
     simp_rw[g]
     norm_num
   }
   let g₁ : closed_curve := {toFun := g, diff_curve := gdiff', cont_deriv := g'cont, closed := g0g1}
-  have h_deriv_coinc : ∀ (x : ℝ), 0 < x ∧ x < 1 → deriv γ.toFun x / (γ.toFun x - z) = deriv g₁.toFun x / (g₁.toFun x - z) := by sorry
-  have hinteq : ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - z) = ∫ (t : ℝ) in I, deriv g₁.toFun t / (g₁.toFun t - z) := by {
-    refine setIntegral_congr_ae₀ ?hs ?h
-    exact nullMeasurableSet_Icc
+  have h_deriv_coinc : ∀ x ∈ Set.Ioo (0 : ℝ) 1, deriv γ.toFun x / (γ.toFun x - z) = deriv g₁.toFun x / (g₁.toFun x - z) := by {
+    intro x hx
     sorry
+  }
+  have hmeasIop : MeasurableSet (Set.Ioo (0 : ℝ)  1) := by measurability
+  have hinteq : ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - z) = ∫ (t : ℝ) in I, deriv g₁.toFun t / (g₁.toFun t - z) := by {
+    simp_rw [@integral_Icc_eq_integral_Ioo]
+    exact setIntegral_congr hmeasIop h_deriv_coinc
   }
   rw[hinteq]
   exact contour_integral_eq_curve_integral_15 g₁ rfl z
 }
 
+#check Set.Icc 0 (2*π)
 lemma contour_integral_eq_curve_integral_2 (γ : closed_curve) (h_circle : ∀ t ∈ I, γ t = Complex.exp (Complex.I * 2*π* t)) (z : ℂ ):
 ∫ (t : ℝ) in I, deriv γ t / (γ t - z) = ∮ (z_1 : ℂ) in C(0, 1), (z_1 - z)⁻¹ := by {
     rw[circleIntegral_def_Icc]
@@ -681,7 +723,9 @@ lemma contour_integral_eq_curve_integral_2 (γ : closed_curve) (h_circle : ∀ t
     }
     rw[← hfeq]
     apply Eq.symm
-    have hinteq : ∫ (θ : ℝ) in f '' I, «I» * cexp (↑θ * «I») / (cexp (↑θ * «I») - z) = ∫ (θ : ℝ) in f '' I, g₁ θ := by sorry -- should be easy
+    have hinteq : ∫ (θ : ℝ) in f '' I, «I» * cexp (↑θ * «I») / (cexp (↑θ * «I») - z) = ∫ (θ : ℝ) in f '' I, g₁ θ := by {
+      norm_num
+      }
     rw[hinteq]
     simp[integral_image_eq_integral_abs_deriv_smul (f := f) (f' := f') (hf := hf₁) (hf' := hf') (g := g₁)]
     simp_rw[f, g₁, f']
