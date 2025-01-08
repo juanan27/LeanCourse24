@@ -126,3 +126,10 @@ def exteriorOfClosedCurve (γ : closed_curve) : Set ℂ := {z : ℂ | ω z γ = 
 -- For completeness we also include the definition for the image of a closed curve
 
 def imageOfClosedCurve (γ : closed_curve) : Set ℂ := {z : ℂ | z ∈ γ '' I}
+
+-- We also define the circle with the usual parametrization.
+
+def CircleCurve_whole (γ : closed_curve) : Prop := (γ.toFun = (fun (θ : ℝ)  ↦ Complex.exp (2*π*Complex.I*θ)))
+
+-- Note that in this case, the circle is defined bearing in mind the paramterization from [0,1]
+-- because it winds around the origin just once with this parametrization.
