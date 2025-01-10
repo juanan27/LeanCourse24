@@ -24,6 +24,8 @@ import Mathlib.Tactic
 import Mathlib.Analysis.Complex.CauchyIntegral
 import Mathlib.MeasureTheory.Function.Jacobian
 import Mathlib.Algebra.GroupWithZero.Basic
+import Mathlib.MeasureTheory.Measure.MeasureSpaceDef
+import Mathlib.MeasureTheory.Function.L1Space
 import LeanCourse.ProjectWinding.Definitions.curves
 
 open DifferentiableOn Finset
@@ -37,61 +39,6 @@ noncomputable section
 
 open Classical
 
--- We can see the complex plane divided by the interior, exterior and image of any closed curve:
-
-lemma interior_exterior_OfClosedCurve_whole_plane (γ : closed_curve) :
-∀ z : ℂ, z ∈ interiorOfClosedCurve γ ∪ exteriorOfClosedCurve γ ∪ imageOfClosedCurve γ := by {
-  intro z
-  by_cases h : z ∈ γ '' I
-  · exact Set.mem_union_right (interiorOfClosedCurve γ ∪ exteriorOfClosedCurve γ) h
-  · by_cases h₀ : ω z γ = 0
-    · have h₀' : z ∈ exteriorOfClosedCurve γ := by {
-      unfold exteriorOfClosedCurve
-      simp only [Set.mem_Icc, not_exists, not_and, and_imp, mem_setOf_eq]
-      trivial
-      }
-      simp[h₀']
-    · have h₀' : z ∈ interiorOfClosedCurve γ := by {
-      unfold interiorOfClosedCurve
-      simp only [Set.mem_Icc, not_exists, not_and, and_imp, mem_setOf_eq]
-      trivial}
-      simp[h₀']
-
-}
-
-lemma disjoint_interior_exterior_OfClosedCurve (γ : closed_curve):
-interiorOfClosedCurve γ ∩ exteriorOfClosedCurve γ ∩ imageOfClosedCurve γ = ∅ := by {
-  ext z
-  simp only [mem_inter_iff, mem_empty_iff_false, iff_false, not_and, and_imp]
-  intro h₀ h₁
-  exfalso
-  have h0 : ω z γ = 0 := by {
-    unfold exteriorOfClosedCurve at *
-    have haux : ω z γ = 0 ∧ z ∉ γ.toFun '' I := by exact h₁
-    obtain ⟨hp, hq⟩ := haux
-    exact hp
-  }
-  have h1 : ω z γ ≠ 0 := by {
-    unfold interiorOfClosedCurve at *
-    have haux : ω z γ ≠  0 ∧ z ∉ γ.toFun '' I := by exact h₀
-    obtain ⟨hp, hq⟩ := haux
-    exact hp
-  }
-  contradiction
-}
-
-
--- The index function is continuous
-
-theorem ω_cont (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I, γ t ≠ z)
-: ContinuousOn ω (univ \ (image γ I))  := by {
-  intro z₀ hz₀
-  unfold ω
-  simp
-  intro x hx
-  simp
-  sorry
-}
 theorem division_continuous (f : ℝ → ℂ ) (g : ℝ → ℂ ) (h : ContinuousOn f (I))
 (h' : ContinuousOn g (I)) (h_v : ∀ s ∈ I, g s ≠ 0) : ContinuousOn (fun s ↦ f s / g s) (I) := by {
 apply h.div
@@ -254,6 +201,8 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I , γ t ≠ z)
               exact h_cont.mono h_sub
             }
             sorry
+          }
+          · exact h₁
         }
     _ = - Complex.exp (- ∫ s in (0)..t, deriv γ s / (γ s - z)) * deriv γ t / (γ t   - z) * (γ t - z)
         + Complex.exp (- ∫ s in (0)..t, deriv γ s / (γ s - z)) * deriv γ t := by {
@@ -269,12 +218,25 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I , γ t ≠ z)
     _ = 0 := by ring
     }
   have coincide_ψ : ψ 0 = ψ 1 := by {
-    have h_cont : ContinuousOn (fun t ↦ deriv γ.toFun t / (γ.toFun t - z)) I := by sorry
+    have h_cont : ContinuousOn (fun t ↦ deriv γ.toFun t / (γ.toFun t - z)) I := by exact h_cont
     have hcont : ContinuousOn ψ I := by {
       refine ContinuousOn.mul ?_ ?_
       · have hF : ContinuousOn (fun t ↦ -∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) I := by {
         apply ContinuousOn.neg
-        sorry
+        have h_int : IntegrableOn (fun t ↦ deriv γ.toFun t / (γ.toFun t - z)) (Icc 0 1) := by {
+          have hK : IsCompact I := by exact isCompact_Icc
+          exact ContinuousOn.integrableOn_compact hK h_cont
+        }
+        have h_sub : I = Set.Icc (0 : ℝ) 1 := rfl
+        rw [h_sub]
+        have h_eq : (fun x => ∫ s in (0)..x, deriv γ.toFun s / (γ.toFun s - z)) =
+        (fun x => ∫ s in (Set.Ioc 0 x), deriv γ.toFun s / (γ.toFun s - z)) := by {
+          ext1 x
+          sorry
+          }
+        rw [h_eq]
+
+        exact intervalIntegral.continuousOn_primitive_Icc h_int
         }
         exact ContinuousOn.cexp hF
       · exact ContinuousOn.sub hγ (continuousOn_const)
@@ -284,6 +246,9 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I , γ t ≠ z)
       have htt : t ∈ I := by exact mem_Icc_of_Ico ht
       have h_deriv : deriv ψ t = 0 := deriv₀ t htt
       obtain ⟨h₁, h₂⟩ := ht
+      rw [hasDerivWithinAt_iff_hasFDerivWithinAt]
+      specialize deriv₀ t htt
+      --rw [← h_deriv]
       sorry
     }
     have h_const : ∀ x ∈ Set.Icc 0 1, ψ x = ψ 0 := by {
