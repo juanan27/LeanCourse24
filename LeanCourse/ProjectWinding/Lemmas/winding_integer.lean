@@ -237,6 +237,7 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I , γ t ≠ z)
         rw [h_eq]
 
         exact intervalIntegral.continuousOn_primitive_Icc h_int
+        sorry
         }
         exact ContinuousOn.cexp hF
       · exact ContinuousOn.sub hγ (continuousOn_const)
@@ -320,9 +321,11 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I , γ t ≠ z)
   exact hsuff
 }
 
--- We evaluate the values of ω when γ is the unit circle:
+/- We want to evaluate the values of ω when γ is the unit circle. In Mathlib, there are some lemmas which help
+    to solve this. However, they are based on the structure CircleMap.
+-/
 
--- First we show the following (very) useful equality:
+-- For this reason, we first show the following useful equality:
 
 lemma contour_integral_eq_curve_integral_15 (γ : closed_curve) (h_circle : CircleCurve_whole γ) (z : ℂ ):
 ∫ (t : ℝ) in I, deriv γ t / (γ t - z) = ∮ (z_1 : ℂ) in C(0, 1), (z_1 - z)⁻¹ := by {
@@ -519,16 +522,55 @@ lemma contour_integral_eq_curve_integral_15 (γ : closed_curve) (h_circle : Circ
 
 -- Actually, we only need for the curve to coincide with the circle in [0,1], by our definition of Winding Number
 
-lemma contour_integral_eq_curve_integral_175 (γ : closed_curve) (h_circle : ∀ t ∈ I, γ t = Complex.exp (Complex.I * 2*π* t)) (z : ℂ ):
+lemma contour_integral_eq_curve_integral_strong (γ : closed_curve) (h_circle : ∀ t ∈ I, γ t = Complex.exp (Complex.I * 2*π* t)) (z : ℂ ):
 ∫ (t : ℝ) in I, deriv γ t / (γ t - z) = ∮ (z_1 : ℂ) in C(0, 1), (z_1 - z)⁻¹ := by {
   have hderiv : ∀ t : ℝ, (0 < t ∧ t < 1) → HasDerivAt γ.toFun ((Complex.I * 2*π) * Complex.exp (Complex.I * 2*π* t)) t := by sorry
   let g : ℝ → ℂ := fun (θ : ℝ) ↦ Complex.exp (2*π*Complex.I*θ)
   have gdiff : Differentiable ℝ g := by {
     refine Differentiable.cexp ?hc
-    sorry
+    have hdif : Differentiable ℝ (fun (θ :ℝ) ↦ (θ :ℂ)) := by {
+      sorry
+    }
+    fun_prop
   }
   have gdiff' : DifferentiableOn ℝ g I := by exact Differentiable.differentiableOn gdiff
-  have deriv_g : deriv g = fun (θ : ℝ) ↦ (2*π*Complex.I) *Complex.exp (2*π*Complex.I*θ) := by sorry
+  have deriv_aux_g : ∀ (θ :ℝ), HasDerivAt (fun (θ : ℝ) ↦ Complex.exp (2*π*Complex.I*θ)) ((2*π*Complex.I)*Complex.exp (2*π*Complex.I*θ)) θ := by {
+    intro θ
+    let e : ℂ → ℂ := fun (θ : ℂ) ↦ Complex.exp (2*π*Complex.I*θ)
+    have h_all : ∀ (x:ℝ) (y : ℂ), HasDerivAt (fun (x : ℝ)  ↦ cexp (x*y)) (y * cexp (x*y)) x := by {
+        intro x y
+        let h₁ : ℝ → ℂ := (fun x ↦ (x : ℂ) *y)
+        let e : ℂ → ℂ := (fun x ↦ x*y)
+        let h₂ : ℂ → ℂ := (fun z ↦ cexp z)
+        have h : HasDerivAt e y (x : ℂ) := by exact hasDerivAt_mul_const y
+        have h' : HasDerivAt h₁ y x := by exact HasDerivAt.comp_ofReal (e := e) (e' := y) (hf := h) -- By hint
+        have hh2 : HasDerivAt h₂ (cexp (h₁ x)) (h₁ x) := by exact Complex.hasDerivAt_exp (h₁ x)
+        have hder : HasDerivAt (h₂ ∘ h₁) (cexp (h₁ x) * y ) x := by exact HasDerivAt.comp x hh2 h'
+        have hxy : x * y = h₁ x := by exact rfl
+        rw[hxy]
+        have h1h2 : (fun (x : ℝ)  ↦ cexp (x * y)) = h₂ ∘ h₁ := by exact rfl
+        rw[h1h2]
+        rw[mul_comm]
+        exact hder
+      }
+    have h_all' : ∀ (x : ℝ) (y : ℂ), HasDerivAt (fun (x : ℝ)  ↦ cexp (y * (x : ℂ ))) (y * cexp (y * (x : ℂ ))) x := by {
+      intro x y
+      specialize h_all x y
+      have hcomm : (x : ℂ ) * y = y * (x : ℂ ) := by ring
+      simp_rw[hcomm] at h_all
+      have hcomm' : (fun (x :ℝ) ↦ cexp (↑x * y)) = (fun (x : ℝ) ↦ cexp (y * ↑x)) := by {
+        ext a
+        ring_nf
+      }
+      simp_rw[← hcomm']
+      exact h_all
+    }
+    specialize h_all' θ (2 * ↑π * «I» )
+    exact h_all'
+  }
+  have deriv_g : deriv g = fun (θ : ℝ) ↦ (2*π*Complex.I) *Complex.exp (2*π*Complex.I*θ) := by {
+    exact deriv_eq deriv_aux_g
+  }
   have g'cont : ContinuousOn (deriv g) $ I := by {
     simp_rw[deriv_g]
     fun_prop
@@ -563,7 +605,7 @@ lemma winding_circle_inside (γ : closed_curve) (h_circle : ∀ t ∈ I, γ t = 
   have h_int : ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - z) = 2*π*Complex.I := by {
     let const : ℂ → ℂ := fun z ↦ 1
     have integ_eq : ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - z) = ∮ (z_1 : ℂ) in C(0, 1), (z_1 - z)⁻¹ := by {
-      exact contour_integral_eq_curve_integral_175 γ h_circle z
+      exact contour_integral_eq_curve_integral_strong γ h_circle z
     }
     rw[integ_eq]
     have hc1 : const z = 1 := by exact rfl
@@ -583,19 +625,22 @@ lemma winding_circle_inside (γ : closed_curve) (h_circle : ∀ t ∈ I, γ t = 
   /- Outside the unit circle we can use the fact that the function is holomorphic. For this we use the lemma
     Complex.circleIntegral_eq_zero_of_differentiable_on_off_countable. -/
 
-  lemma winding_circle_outside (γ : closed_curve) (h_circle : ∀ t ∈ I, γ t = Complex.exp (Complex.I * 2*π* t)) (z : ℂ ) (h : norm z > 1) : ω z γ = 0 := by {
+  lemma winding_circle_outside (γ : closed_curve) (h_circle : ∀ t ∈ I, γ t = Complex.exp (Complex.I * 2*π* t))
+  (z : ℂ ) (h : norm z > 1) : ω z γ = 0 := by {
     unfold ω
     have h₀ : ∫ (t : ℝ) in I, deriv γ t / (γ t - z) = 0 := by {
       let g : ℂ → ℂ := fun z_1 ↦ 1 / (z_1 - z)
       have h_1 : ∫ (t : ℝ) in I, deriv γ t / (γ t - z) = ∮ (z_1 : ℂ) in C(0, 1), (fun (z_1 : ℂ)  ↦ (z_1 - z)⁻¹) z_1 := by {
-        exact contour_integral_eq_curve_integral_175 γ h_circle z}
+        exact contour_integral_eq_curve_integral_strong γ h_circle z}
       rw[h_1]
-      apply Complex.circleIntegral_eq_zero_of_differentiable_on_off_countable (f := fun (z_1 : ℂ)  ↦ (z_1 - z)⁻¹ ) (s := ∅)
+      apply Complex.circleIntegral_eq_zero_of_differentiable_on_off_countable
+        (f := fun (z_1 : ℂ)  ↦ (z_1 - z)⁻¹ ) (s := ∅)
       · exact countable_empty
       · have hz_1 : ∀ z_1 ∈ (closedBall 0 1), z_1 - z ≠ 0 := by {
         intro z_1 hz_1
         have hnorm: Complex.abs (z_1 - z) > 0 := by {
-          have rev_tri : Complex.abs (z_1 - z) ≥ |(Complex.abs z_1 - Complex.abs z)| := by exact AbsoluteValue.abs_abv_sub_le_abv_sub Complex.abs z_1 z -- reverse triangle inequality
+          have rev_tri : Complex.abs (z_1 - z) ≥ |(Complex.abs z_1 - Complex.abs z)| := by
+           exact AbsoluteValue.abs_abv_sub_le_abv_sub Complex.abs z_1 z -- reverse triangle inequality
           have hn : (Complex.abs z_1 - Complex.abs z) ≠ 0 := by {
             have hnaux : Complex.abs z_1 ≠  Complex.abs z := by {
               simp at hz_1
