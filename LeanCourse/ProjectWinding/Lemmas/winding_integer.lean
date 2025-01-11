@@ -524,12 +524,18 @@ lemma contour_integral_eq_curve_integral (γ : closed_curve) (h_circle : CircleC
 
 lemma contour_integral_eq_curve_integral_strong (γ : closed_curve) (h_circle : ∀ t ∈ I, γ t = Complex.exp (Complex.I * 2*π* t)) (z : ℂ ):
 ∫ (t : ℝ) in I, deriv γ t / (γ t - z) = ∮ (z_1 : ℂ) in C(0, 1), (z_1 - z)⁻¹ := by {
-  have hderiv : ∀ t : ℝ, (0 < t ∧ t < 1) → HasDerivAt γ.toFun ((Complex.I * 2*π) * Complex.exp (Complex.I * 2*π* t)) t := by sorry
   let g : ℝ → ℂ := fun (θ : ℝ) ↦ Complex.exp (2*π*Complex.I*θ)
   have gdiff : Differentiable ℝ g := by {
     refine Differentiable.cexp ?hc
     have hdif : Differentiable ℝ (fun (θ : ℝ) ↦ (θ : ℂ)) := by {
-      sorry
+      have hderiv : ∀ (θ : ℝ), HasDerivAt (fun (θ : ℝ) ↦ (θ : ℂ)) 1 θ := by {
+        intro θ
+        apply HasDerivAt.comp_ofReal (e := fun θ ↦ θ) (e' := 1)
+        exact hasDerivAt_id' (θ : ℂ)
+      }
+      intro θ
+      specialize hderiv θ
+      exact HasFDerivAt.differentiableAt hderiv
     }
     fun_prop
   }
