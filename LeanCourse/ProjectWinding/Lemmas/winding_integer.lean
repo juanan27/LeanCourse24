@@ -327,7 +327,7 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I , γ t ≠ z)
 
 -- For this reason, we first show the following useful equality:
 
-lemma contour_integral_eq_curve_integral_15 (γ : closed_curve) (h_circle : CircleCurve_whole γ) (z : ℂ ):
+lemma contour_integral_eq_curve_integral (γ : closed_curve) (h_circle : CircleCurve_whole γ) (z : ℂ ):
 ∫ (t : ℝ) in I, deriv γ t / (γ t - z) = ∮ (z_1 : ℂ) in C(0, 1), (z_1 - z)⁻¹ := by {
     rw[circleIntegral_def_Icc]
     unfold circleMap
@@ -528,7 +528,7 @@ lemma contour_integral_eq_curve_integral_strong (γ : closed_curve) (h_circle : 
   let g : ℝ → ℂ := fun (θ : ℝ) ↦ Complex.exp (2*π*Complex.I*θ)
   have gdiff : Differentiable ℝ g := by {
     refine Differentiable.cexp ?hc
-    have hdif : Differentiable ℝ (fun (θ :ℝ) ↦ (θ :ℂ)) := by {
+    have hdif : Differentiable ℝ (fun (θ : ℝ) ↦ (θ : ℂ)) := by {
       sorry
     }
     fun_prop
@@ -580,9 +580,28 @@ lemma contour_integral_eq_curve_integral_strong (γ : closed_curve) (h_circle : 
     norm_num
   }
   let g₁ : closed_curve := {toFun := g, diff_curve := gdiff', cont_deriv := g'cont, closed := g0g1}
+  have h_coinc : ∀ x ∈ Set.Ioo (0 : ℝ) 1, γ.toFun x = g₁.toFun x := by {
+    intro x hx
+    simp_rw[g]
+    have hxop : x ∈ I := by exact mem_Icc_of_Ioo hx
+    specialize h_circle x hxop
+    rw[h_circle]
+    ring_nf
+  }
+  have h_deriv_coinc_aux : ∀ x ∈ Set.Ioo (0 : ℝ) 1, deriv γ.toFun x = deriv g₁.toFun x  := by {
+    intro x hx
+    refine EventuallyEq.deriv_eq ?hL
+    have hneigh : Set.Ioo (0 : ℝ) 1 ∈ 𝓝 x := by {
+      refine IsOpen.mem_nhds ?hs hx
+      exact isOpen_Ioo
+    }
+    exact eventuallyEq_of_mem hneigh h_coinc
+  }
   have h_deriv_coinc : ∀ x ∈ Set.Ioo (0 : ℝ) 1, deriv γ.toFun x / (γ.toFun x - z) = deriv g₁.toFun x / (g₁.toFun x - z) := by {
     intro x hx
-    sorry
+    exact
+      Mathlib.Tactic.LinearCombination'.div_pf (h_deriv_coinc_aux x hx)
+        (congrFun (congrArg HSub.hSub (h_coinc x hx)) z)
   }
   have hmeasIop : MeasurableSet (Set.Ioo (0 : ℝ)  1) := by measurability
   have hinteq : ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - z) = ∫ (t : ℝ) in I, deriv g₁.toFun t / (g₁.toFun t - z) := by {
@@ -590,7 +609,7 @@ lemma contour_integral_eq_curve_integral_strong (γ : closed_curve) (h_circle : 
     exact setIntegral_congr hmeasIop h_deriv_coinc
   }
   rw[hinteq]
-  exact contour_integral_eq_curve_integral_15 g₁ rfl z
+  exact contour_integral_eq_curve_integral g₁ rfl z
 }
 
 #check Set.Icc 0 (2*π)
@@ -630,7 +649,8 @@ lemma winding_circle_inside (γ : closed_curve) (h_circle : ∀ t ∈ I, γ t = 
     unfold ω
     have h₀ : ∫ (t : ℝ) in I, deriv γ t / (γ t - z) = 0 := by {
       let g : ℂ → ℂ := fun z_1 ↦ 1 / (z_1 - z)
-      have h_1 : ∫ (t : ℝ) in I, deriv γ t / (γ t - z) = ∮ (z_1 : ℂ) in C(0, 1), (fun (z_1 : ℂ)  ↦ (z_1 - z)⁻¹) z_1 := by {
+      have h_1 : ∫ (t : ℝ) in I, deriv γ t / (γ t - z) = ∮ (z_1 : ℂ) in C(0, 1),
+      (fun (z_1 : ℂ)  ↦ (z_1 - z)⁻¹) z_1 := by {
         exact contour_integral_eq_curve_integral_strong γ h_circle z}
       rw[h_1]
       apply Complex.circleIntegral_eq_zero_of_differentiable_on_off_countable
