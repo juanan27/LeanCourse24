@@ -114,14 +114,46 @@ lemma ftc (f : ℝ → ℂ) (hf : Continuous f) (a b : ℝ) :
     deriv (fun u ↦ ∫ x : ℝ in a..u, f x) b = f b :=
   (hf.integral_hasStrictDerivAt a b).hasDerivAt.deriv
 
-lemma ftc_2 (f : ℝ → ℂ) (hf : ContinuousOn f (I))
-    (g := fun u ↦ ∫ x : ℝ in (0)..u, f x) : ∀ b ∈ I, deriv g b = f b :=
+lemma ftc_2 (f : ℝ → ℂ) (hf : ContinuousOn f (I)) :
+      ∀ b ∈ I, deriv (fun u ↦ ∫ x : ℝ in (0)..u, f x) b = f b :=
   by {
     intro b hb
-    have h_deriv : HasDerivAt g (f b) b := by {
-      sorry
+    have h_deriv : HasDerivAt (fun u ↦ ∫ x : ℝ in (0)..u, f x) (f b) b := by {
+      have hint : IntervalIntegrable f volume (0) b := by {
+        have hI : [[0, b]] ⊆ I := by {
+          intro x hx
+          obtain ⟨h1, h2⟩ := hx
+          simp at *
+          obtain ⟨h3, h4⟩ := hb
+          obtain hP|hQ := h1
+          · obtain h5|h6 := h2
+            · have hxx : x ≤ 1 := by exact le_implies_le_of_le_of_le h5 h4 h3
+              exact ⟨hP, hxx⟩
+            · have hxx : x ≤ 1 := by exact Preorder.le_trans x b 1 h6 h4
+              exact ⟨hP, hxx⟩
+          · obtain h5|h6 := h2
+            · have hxx : 0 ≤ x := by exact Preorder.le_trans 0 b x h3 hQ
+              have hxxx : x = 0 := by exact le_antisymm h5 hxx
+              rw [hxxx] at hQ
+              have hb0 : b = 0 := by exact le_antisymm hQ h3
+              have hx1 : x ≤ 1 := by linarith
+              exact ⟨hxx, hx1⟩
+            · have hxx : 0 ≤ x := by exact Preorder.le_trans 0 b x h3 hQ
+              have hx1 : x ≤ 1 := by linarith
+              exact ⟨hxx, hx1⟩
+        }
+        have haux : ContinuousOn f (Set.uIcc 0 b) := by exact ContinuousOn.mono hf hI
+        exact ContinuousOn.intervalIntegrable haux
+      }
+      have hbb : ContinuousAt f b := by {
+        sorry
+      }
+      have hmeas : StronglyMeasurableAtFilter f (nhds b) := by {
+        sorry
+      }
+      exact intervalIntegral.integral_hasDerivAt_right hint hmeas hbb
     }
-    sorry
+    exact HasDerivAt.deriv h_deriv
     }
 
 
@@ -223,21 +255,16 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I , γ t ≠ z)
       refine ContinuousOn.mul ?_ ?_
       · have hF : ContinuousOn (fun t ↦ -∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) I := by {
         apply ContinuousOn.neg
-        have h_int : IntegrableOn (fun t ↦ deriv γ.toFun t / (γ.toFun t - z)) (Icc 0 1) := by {
+        have h_int : IntegrableOn (fun t ↦ deriv γ.toFun t / (γ.toFun t - z)) I := by {
           have hK : IsCompact I := by exact isCompact_Icc
           exact ContinuousOn.integrableOn_compact hK h_cont
         }
-        have h_sub : I = Set.Icc (0 : ℝ) 1 := rfl
-        rw [h_sub]
-        have h_eq : (fun x => ∫ s in (0)..x, deriv γ.toFun s / (γ.toFun s - z)) =
-        (fun x => ∫ s in (Set.Ioc 0 x), deriv γ.toFun s / (γ.toFun s - z)) := by {
-          ext1 x
-          sorry
-          }
-        rw [h_eq]
-
-        exact intervalIntegral.continuousOn_primitive_Icc h_int
-        sorry
+        have hI : Set.uIcc 0 1 = I := by {
+          refine uIcc_of_le ?h; linarith
+        }
+        rw [← hI] at h_int
+        rw [← hI]
+        exact intervalIntegral.continuousOn_primitive_interval h_int
         }
         exact ContinuousOn.cexp hF
       · exact ContinuousOn.sub hγ (continuousOn_const)
@@ -246,17 +273,86 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I , γ t ≠ z)
       intro t ht
       have htt : t ∈ I := by exact mem_Icc_of_Ico ht
       have h_deriv : deriv ψ t = 0 := deriv₀ t htt
-      obtain ⟨h₁, h₂⟩ := ht
-      rw [hasDerivWithinAt_iff_hasFDerivWithinAt]
+      /-have h_tendsto : Filter.Tendsto (λ x => (ψ x - ψ t) / (x - t)) (𝓝[Set.Ici t \ {t}] t) (𝓝 0) := by {
+        sorry
+     }-/
+      --rw [hasDerivWithinAt_iff_hasFDerivWithinAt]
       specialize deriv₀ t htt
-      --rw [← h_deriv]
-      sorry
+      have hmini : HasDerivAt ψ (deriv ψ t) t := by {
+        rw [hasDerivAt_iff_tendsto]
+        rw [deriv₀]
+        simp [mul_zero]
+        have eq1 : (fun x' ↦ |x' - t|⁻¹ * Complex.abs (ψ x' - ψ t))
+        = (fun x' ↦ Complex.abs (ψ x' - ψ t) * |x' - t|⁻¹) := by {
+          ext1 x
+          exact CommMonoid.mul_comm |x - t|⁻¹ $ Complex.abs (ψ x - ψ t)
+        }
+        have eq2 : (fun x' ↦ |x' - t|⁻¹ * Complex.abs (ψ x' - ψ t))
+        = (fun x' ↦ Complex.abs (ψ x' - ψ t) / |x' - t|) := by {
+          exact eq1
+        }
+        rw [eq2]
+        have hnorm : (fun x => Complex.abs (ψ x - ψ t) / |x - t|) =
+        (fun x => Complex.abs ((ψ x - ψ t) / (x- t))) := by {
+          ext1 x
+          field_simp
+          have hn : |x - t| = Complex.abs (x - t) := by {
+            have hco : (↑x - ↑t) = ↑(x - t) := by exact rfl
+            rw [hco]
+            rw [← Complex.abs_ofReal]
+            rw [Complex.ofReal_sub]
+          }
+          rw [hn]
+        }
+        rw [hnorm]
+        simp
+        have habs : (fun x ↦ Complex.abs ((ψ x - ψ t) / (↑x - ↑t))) =
+        (fun x ↦ ‖(ψ x - ψ t) / (↑x - ↑t)‖) := by {
+          ext1 x
+          exact rfl
+        }
+        have hcom : (fun x ↦ Complex.abs ((ψ x - ψ t) / (↑x - ↑t))) =
+        (fun x ↦ Complex.abs (ψ x - ψ t) / Complex.abs (↑x - ↑t)) := by {
+          ext1 x
+          simp_all only [Set.mem_Icc, ne_eq, and_imp, Set.mem_Ico, true_and, map_div₀, norm_div, Complex.norm_eq_abs,
+            g', h', φ, g, ψ]
+        }
+        rw [← hcom, habs]
+        --rw [tendsto_zero_iff_norm_tendsto_zero]
+        have h_inner : Tendsto (fun x ↦ (ψ x - ψ t) / (↑x - ↑t)) (𝓝 t) (𝓝 0) := by {
+          rw [← dslope_same ψ t] at h_deriv
+          have eqaux : (fun x ↦ (ψ x - ψ t) / (x - t)) = (fun x => (ψ x - ψ t) * (x - t)⁻¹) := by {
+            ext1 x
+            rw [div_eq_mul_inv]
+            congr
+            simp_all only [Set.mem_Icc, ne_eq, and_imp, Set.mem_Ico, true_and, dslope_same,
+            map_div₀, ofReal_inv,
+              Complex.ofReal_sub, g', h', φ, g, ψ]
+          }
+          have eqaux1 : (fun x ↦ (ψ x - ψ t) * (x - t)⁻¹) = (fun x => (x - t)⁻¹ * (ψ x - ψ t)) := by {
+            ext1 x
+            exact CommMonoid.mul_comm (ψ x - ψ t) ↑(x - t)⁻¹
+          }
+          rw [eqaux, eqaux1]
+          have dot : (fun x ↦ ↑(x - t)⁻¹ * (ψ x - ψ t)) = (fun x ↦ ↑(x - t)⁻¹ • (ψ x - ψ t)) := by {
+            simp
+          }
+          rw [dot]
+
+          sorry
+        }
+        rw [tendsto_zero_iff_norm_tendsto_zero] at h_inner
+        exact h_inner
+      }
+      rw [deriv₀] at hmini
+      exact HasDerivAt.hasDerivWithinAt hmini
     }
     have h_const : ∀ x ∈ Set.Icc 0 1, ψ x = ψ 0 := by {
       intro x hx
       exact constant_of_has_deriv_right_zero hcont hderiv x hx
     }
-    simp_all only [Set.mem_Icc, ne_eq, and_imp, intervalIntegral.integral_same, neg_zero, Complex.exp_zero, one_mul,
+    simp_all only [Set.mem_Icc, ne_eq, and_imp, intervalIntegral.integral_same,
+    neg_zero, Complex.exp_zero, one_mul,
       le_refl, zero_le_one, g', h', φ, g, ψ]
   }
 
