@@ -170,34 +170,39 @@ lemma exp_one (z : ℂ) (h_1 : Complex.exp z = 1) : ∃ k : ℤ, z = 2 * Real.pi
 
 -- We are ready to show ω is an integer
 
-theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I , γ t ≠ z)
+theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z)
 : ∃ n : ℤ, ω z γ = n := by {
   unfold ω
-  have hz : ContinuousOn (fun s : ℝ  ↦ z) (I) := by exact continuousOn_const
-  have hγ : ContinuousOn (fun s : ℝ ↦ γ s) (I) := by exact curve.ContOn γ.tocurve
+  have hz : Continuous (fun s : ℝ  ↦ z) := by exact continuous_const
+  have hγ : Continuous (fun s : ℝ ↦ γ s) := by exact closed_curve.Cont γ
   let g' := fun s : ℝ ↦ γ s - z
-  have hg' : ContinuousOn g' (I) := by {
-  simp_all only [ne_eq, g']
-  exact ContinuousOn.sub hγ hz
+  have hg' : Continuous g' := by {
+    unfold g'
+    exact Continuous.sub hγ hz
   }
   let g := fun t : ℝ  => ∫ s in (0)..(t), (deriv γ s) / (γ s - z)
+
   let h' := fun s : ℝ ↦ deriv γ s
-  have hg : Continuous h' := by {
+
+  have hh' : Continuous h' := by {
   unfold h'
   suffices h_aux : Continuous (deriv γ)
   · exact h_aux
   · exact closed_curve.Cont_deriv γ
   }
-  have h_vanish : ∀ s ∈ I, g' s ≠ 0 := by exact fun s a ↦ sub_ne_zero_of_ne (h s a)
+
+  have h_vanish : ∀ s : ℝ, g' s ≠ 0 := by exact fun s ↦ sub_ne_zero_of_ne (h s)
+
   let φ := fun s : ℝ ↦ (h' s / g' s)
+
   have h_cont : Continuous φ := by {
     unfold φ
-    exact division_continuous h' g' hg hg' h_vanish
+    exact Continuous.div hh' hg' h_vanish
   }
   have hg'' : ∀ t ∈ I, deriv g t = (deriv γ t) / (γ t - z) := by {
   intro t ht
   apply ftc_2
-  · exact h_cont
+  · sorry
   · exact ht
   }
   let ψ : ℝ → ℂ := fun t ↦ Complex.exp (- ∫ s in (0)..t, deriv γ s / (γ s - z)) * (γ t - z)
@@ -219,42 +224,120 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I , γ t ≠ z)
           · have haux : DifferentiableAt ℝ (fun y ↦ - ∫ (s : ℝ) in (0)..y, deriv γ.toFun s / (γ.toFun s - z)) t := by {
             simp_all only [and_imp, differentiableAt_const, DifferentiableAt.sub_iff_left,
               differentiableAt_neg_iff, g', h', φ, g]
-            have hintg : ∀ t ∈ I, IntervalIntegrable (fun t => deriv γ.toFun t / (γ.toFun t - z)) MeasureTheory.volume (0) t := by {
-              intro t ht
+            have hintg : ∀ t : ℝ, IntervalIntegrable (fun t => deriv γ.toFun t / (γ.toFun t - z)) MeasureTheory.volume (0) t := by {
+              intro t
               apply ContinuousOn.intervalIntegrable
-              have h_sub : Icc 0 t ⊆ I := by {
-                intro x hx
-                obtain ⟨h₀, h₁⟩ := hx
-                have h₂ : t ≤ 1 := by simp_all only [Set.mem_Icc, ne_eq, and_imp]
-                have h₃ : 0 ≤ t := by simp_all only [Set.mem_Icc, ne_eq, and_imp, and_true]
-                have h₄ : x ≤ 1 := by exact le_trans h₁ h₂
-                simp_all only [Set.mem_Icc, ne_eq, and_imp, and_self]
-              }
-              rename_i ht_1
-              simp_all only [Set.mem_Icc, ne_eq, and_imp, Set.uIcc_of_le]
-              exact h_cont.mono h_sub
+              apply Continuous.continuousOn
+              exact h_cont
             }
             apply DifferentiableOn.differentiableAt
-            · apply intervalIntegral.differentiableOn_integral_of_continuous hintg h_cont
-
+            apply intervalIntegral.differentiableOn_integral_of_continuous
+            · refine fun x a ↦ hintg x
+            · exact h_cont
+            · exact univ_mem' hintg
           }
+            exact DifferentiableAt.cexp haux
+
           · exact h₁
         }
     _ = - Complex.exp (- ∫ s in (0)..t, deriv γ s / (γ s - z)) * deriv γ t / (γ t   - z) * (γ t - z)
         + Complex.exp (- ∫ s in (0)..t, deriv γ s / (γ s - z)) * deriv γ t := by {
-          sorry
+          rw [div_mul_cancel₀
+              (-Complex.exp (-∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) *
+                deriv γ.toFun t)
+              (h_vanish t)]
+          simp_all only [ne_eq, Set.mem_Icc, and_imp, neg_mul, neg_add_cancel, g', h', φ, g]
+          have heqcal : deriv (fun t ↦ cexp (-∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z))) t =
+          -cexp (-∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) * (deriv γ.toFun t / (γ.toFun t - z)) := by {
+            have hdiff : DifferentiableAt ℝ (fun t ↦ -∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) t := by {
+              simp only [differentiableAt_neg_iff]
+              apply DifferentiableOn.differentiableAt
+              apply intervalIntegral.differentiableOn_integral_of_continuous
+              · exact fun x a ↦ a
+              · exact h_cont
+              · have h_cont1 : ContinuousOn (fun x ↦ deriv γ x / (γ x - z)) (Set.Ioc 0 t) := by {
+                exact Continuous.continuousOn h_cont
+              }
+                have h_cont2 : ContinuousOn (fun x ↦ deriv γ x / (γ x - z)) (Set.Ioc t 0) := by {
+                exact Continuous.continuousOn h_cont
+              }
+                have h_int1 : IntegrableOn (fun x ↦ deriv γ x / (γ x - z)) (Set.Ioc 0 t) volume := by {
+                apply Continuous.integrableOn_Ioc
+                exact h_cont
+              }
+                have h_int2 : IntegrableOn (fun x ↦ deriv γ x / (γ x - z)) (Set.Ioc t 0) volume := by {
+                apply Continuous.integrableOn_Ioc
+                exact h_cont
+              }
+                exact Filter.Eventually.of_forall (fun x =>
+                  let h_int1 : IntegrableOn (fun x ↦ deriv γ.toFun x / (γ.toFun x - z)) (Set.Ioc 0 x) volume := by {
+                    apply Continuous.integrableOn_Ioc
+                    exact h_cont
+                  }
+                  let h_int2 : IntegrableOn (fun x ↦ deriv γ.toFun x / (γ.toFun x - z)) (Set.Ioc x 0) volume := by {
+                    apply Continuous.integrableOn_Ioc
+                    exact h_cont
+                  }
+                  And.intro h_int1 h_int2)
+               }
+            have hstep1 : deriv (fun x ↦ cexp (-∫ (s : ℝ) in (0)..x, deriv γ.toFun s / (γ.toFun s - z))) t =
+            cexp (-∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) *
+            deriv (fun t ↦ -∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) t := by {
+              exact deriv_cexp hdiff
+            }
+            have hstep2 : (fun u ↦ -∫ (x : ℝ) in (0)..u, deriv γ.toFun x / (γ.toFun x - z)) =
+            (fun u ↦ ∫ (x : ℝ) in (0)..u, - deriv γ.toFun x / (γ.toFun x - z)) := by {
+              ext1 x
+              rw [← intervalIntegral.integral_neg]
+              have hstep2aux : (fun x => -(deriv γ.toFun x / (γ.toFun x - z))) =
+              (fun x => -deriv γ.toFun x / (γ.toFun x - z)) := by {
+                ext1 x
+                ring
+              }
+              rw [hstep2aux]
+            }
+            have hstep3 : deriv (fun u ↦ -∫ (x : ℝ) in (0)..u, deriv γ.toFun x / (γ.toFun x - z)) t =
+            - deriv γ.toFun t / (γ.toFun t - z) := by {
+              rw [hstep2]
+              apply Continuous.deriv_integral
+              · exact Continuous.div (Continuous.neg (closed_curve.Cont_deriv γ)) hg' h_vanish
+            }
+            rw [hstep1]
+            rw [hstep3]
+            ring
+            }
+          rw [heqcal]
+          simp_all only [ne_eq, Set.mem_Icc, and_imp, neg_mul, neg_add_cancel, g', h', φ, g]
+          have div : (deriv γ.toFun t / (γ.toFun t - z)) *
+          (γ.toFun t - z) = deriv γ.toFun t := by {
+            rw [div_mul_cancel₀ (deriv γ.toFun t) (h_vanish t)]
+           }
+          have hdivaux : -(cexp (-∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) * (deriv γ.toFun t / (γ.toFun t - z)) *
+          (γ.toFun t - z)) +
+          cexp (-∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) * deriv (fun t ↦ γ.toFun t - z) t =
+          -cexp (-∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) * deriv γ.toFun t +
+          cexp (-∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) * deriv γ.toFun t := by {
+            field_simp
+            --rw[← div]
+            sorry
+          }
+          rw [hdivaux]
+          ring
         }
     _ = -Complex.exp (- ∫ s in (0)..t, deriv γ s / (γ s - z)) * deriv γ t
         + Complex.exp (- ∫ s in (0)..t, deriv γ s / (γ s - z)) * deriv γ t := by {
           rw [div_mul_cancel₀
               (-Complex.exp (-∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) *
                 deriv γ.toFun t)
-              (h_vanish t ht)]
+              (h_vanish t)]
         }
     _ = 0 := by ring
     }
   have coincide_ψ : ψ 0 = ψ 1 := by {
-    have h_cont : ContinuousOn (fun t ↦ deriv γ.toFun t / (γ.toFun t - z)) I := by exact h_cont
+    have h_cont : ContinuousOn (fun t ↦ deriv γ.toFun t / (γ.toFun t - z)) I := by {
+      apply Continuous.continuousOn
+      exact h_cont
+    }
     have hcont : ContinuousOn ψ I := by {
       refine ContinuousOn.mul ?_ ?_
       · have hF : ContinuousOn (fun t ↦ -∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) I := by {
@@ -264,24 +347,20 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I , γ t ≠ z)
           exact ContinuousOn.integrableOn_compact hK h_cont
         }
         have hI : Set.uIcc 0 1 = I := by {
-          refine uIcc_of_le ?h; linarith
+          refine uIcc_of_le ?_; linarith
         }
         rw [← hI] at h_int
         rw [← hI]
         exact intervalIntegral.continuousOn_primitive_interval h_int
         }
         exact ContinuousOn.cexp hF
-      · exact ContinuousOn.sub hγ (continuousOn_const)
+      · exact Continuous.continuousOn hg'
     }
     have hderiv : ∀ t ∈ Set.Ico 0 1, HasDerivWithinAt ψ 0 (Set.Ici t) t := by {
       intro t ht
       have htt : t ∈ I := by exact mem_Icc_of_Ico ht
-      have h_deriv : deriv ψ t = 0 := deriv₀ t htt
-      /-have h_tendsto : Filter.Tendsto (λ x => (ψ x - ψ t) / (x - t)) (𝓝[Set.Ici t \ {t}] t) (𝓝 0) := by {
-        sorry
-     }-/
-      --rw [hasDerivWithinAt_iff_hasFDerivWithinAt]
-      specialize deriv₀ t htt
+      have h_deriv : deriv ψ t = 0 := by exact deriv₀ t
+      specialize deriv₀ t
       have hmini : HasDerivAt ψ (deriv ψ t) t := by {
         rw [hasDerivAt_iff_tendsto]
         rw [deriv₀]
@@ -376,8 +455,7 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I , γ t ≠ z)
   have hexp: Complex.exp (-g 1) = 1 := by {
     have h_dist : γ.toFun 0 ≠ z := by {
       specialize h 0
-      have h_0 : 0 ∈ I := by exact unitInterval.zero_mem
-      exact h h_0
+      exact h
     }
     have h_distinct : γ.toFun 0 - z ≠ 0 := by exact sub_ne_zero_of_ne h_dist
     simp[h_distinct] at h_simp
