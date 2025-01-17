@@ -1,29 +1,9 @@
-import Mathlib.Data.Real.Basic
-import Mathlib.Analysis.Calculus.FDeriv.Basic
-import Mathlib.Analysis.Calculus.Deriv.Basic
-import Mathlib.Data.Complex.Basic
-import Mathlib.MeasureTheory.Integral.IntervalIntegral
-import Mathlib.Analysis.Calculus.FDeriv.Basic
-import Mathlib.Analysis.Normed.Field.Basic
-import Mathlib.Data.Finset.Basic
-import Mathlib.Analysis.Calculus.FDeriv.Mul
-import Mathlib.Analysis.Calculus.Deriv.Mul
-import Mathlib.Analysis.Calculus.Deriv.Add
-import Mathlib.Topology.Algebra.ConstMulAction
-import Mathlib.Analysis.Calculus.Deriv.Comp
-import Mathlib.Topology.ContinuousOn
-import Mathlib.Order.Interval.Basic
-import Mathlib.Topology.UnitInterval
-import Mathlib.Analysis.SpecialFunctions.Trigonometric.Deriv
-import Mathlib.Analysis.Calculus.Deriv.Prod
-import Mathlib.Analysis.Calculus.Deriv.Pow
-import Mathlib.Analysis.SpecialFunctions.Integrals
-import Mathlib.Analysis.Convolution
-import Mathlib.Data.Real.Irrational
-import Mathlib.MeasureTheory.Function.Jacobian
+import Mathlib.Analysis.Calculus.ContDiff.Basic
+import Mathlib.MeasureTheory.Integral.Bochner
+import Mathlib.MeasureTheory.Measure.Haar.OfBasis
 open DifferentiableOn Finset
 open BigOperators Function Set Real Topology Filter
-open MeasureTheory Interval Convolution ENNReal
+open MeasureTheory Interval ENNReal
 
 /- In this document we present some basic definitions of the winding number around a point x
 Intuitively, for an oriented closed curve γ, we can define it as
@@ -42,8 +22,7 @@ open Set unitInterval Finset Metric
 
 structure curve where
  toFun : ℝ → ℂ
- diff_curve : DifferentiableOn ℝ toFun $ I
- cont_deriv : ContinuousOn (deriv toFun) $ I
+ class_c1 : ContDiff ℝ 1 toFun
 
 -- It is sometimes useful to interpret curves as (ℝ → ℂ) maps
 instance : CoeFun curve fun _ => ℝ → ℂ := ⟨fun f => f.toFun⟩
@@ -51,20 +30,26 @@ instance : CoeFun curve fun _ => ℝ → ℂ := ⟨fun f => f.toFun⟩
 -- We'll make continuity and differentiability of curves explicit using Lemmas
 
 lemma curve.ContOn (γ : curve) : ContinuousOn γ I := by {
-  exact DifferentiableOn.continuousOn $ γ.diff_curve
+  have hcont : Continuous γ := γ.class_c1.continuous
+  exact Continuous.continuousOn hcont
   }
 
+lemma curve.Diff (γ : curve) : Differentiable ℝ γ  := by {
+  apply ContDiff.differentiable γ.class_c1
+  simp
+}
 
 lemma curve.DiffOn (γ : curve) : DifferentiableOn ℝ γ I := by {
-  exact γ.diff_curve
+  exact Differentiable.differentiableOn $ curve.Diff γ
+}
 
-
+lemma curve.Cont_derivWithin (γ : curve) : ContinuousOn (derivWithin γ I) I := by {
+ exact ContDiffOn.continuousOn_derivWithin γ.class_c1 (uniqueDiffOn_Icc_zero_one) (le_refl 1)
 }
 
 
-
 lemma curve.Cont_derivOn (γ : curve) : ContinuousOn (deriv γ) $ I := by {
-  exact γ.cont_deriv
+  sorry
 }
 
 -- Let us now define the structure of a closed curve from the definition of curve. It inherits
@@ -127,9 +112,6 @@ def exteriorOfClosedCurve (γ : closed_curve) : Set ℂ := {z : ℂ | ω z γ = 
 
 def imageOfClosedCurve (γ : closed_curve) : Set ℂ := {z : ℂ | z ∈ γ '' I}
 
--- We also define the circle with the usual parametrization.
+noncomputable def length (γ : curve) : ℝ := ∫ t in I, Complex.abs (deriv γ t)
 
-def CircleCurve_whole (γ : closed_curve) : Prop := (γ.toFun = (fun (θ : ℝ)  ↦ Complex.exp (2*π*Complex.I*θ)))
-
--- Note that in this case, the circle is defined bearing in mind the paramterization from [0,1]
--- because it winds around the origin just once with this parametrization.
+#min_imports
