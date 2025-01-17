@@ -10,7 +10,10 @@
 \geometry{a4paper, margin=1in} % Set page size and margins
 \usepackage{graphicx}          % Include graphics
 \usepackage{hyperref}          % Hyperlinks in the document
+\usepackage{amsthm}
 
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
 % Title and Author Information
 \title{Winding Number of a Curve - LEAN4 Project (Logbook)}
 \author{Jorge Carrasco Coquillat \and
@@ -44,22 +47,63 @@ Since this project focuses on the definition and properties of the winding numbe
 we will now give the definition of \textit{curve} that we have used - there is no a general
 consensus on how to define them, especially regarding the definition interval.
 
-For us, a curve $\gamma$ will be a $\cal{C}^1 (I, \mathbb{C})$ function, where I stands for the unit interval.
+For us, a curve $\gamma$ will be a $\cal{C}^1 (\text{I}, \mathbb{C})$ function, where I stands for the unit interval.
 
 \begin{itemize}
   \item \textbf{Topological definition:} it uses the path-lifting property [ref]. Given
-  a curve $\gamma$
-  \item \textbf{Analytic definitions:} seguir
+  a curve $\gamma : [0, 1] \to \mathbb{C}$ and $z_0 \in C$ satisfying $z \notin \text{im} \gamma$, the winding
+  number of $\gamma$ around $z_0$ is defined as
+  $$\omega (\gamma, z_0) = s(1) - s(0),$$
+  where $(\rho, s)$ is the path written in polar coordinates, this is, the lifted path
+  through the covering map
+  $$p : \mathbb{R}_+ \times \mathbb{R} \to \mathbb{C}$$
+  $$(\rho_0, s_0) \mapsto z_0 + \rho_0 e^{i2\pi s_0}.$$
+  \item \textbf{Analytic definition:} The analytic definition is more straightforward. Consider the curve $\gamma$
+  and the point $z_0$ as previously specified. The winding of $\gamma$ around $z_0$ is defined as
+  $$\omega(\gamma, z_0) = \frac{1}{2\pi i} \int_{0}^{1} {\frac{\gamma'(t)}{\gamma(t)-z_0} \text{dt}}.$$
 \end{itemize}
 
+After spending half a week discussing wether we should try proving the equivalence of definitions we
+noticed that there was a big problem regarding this issue: there are a lot of results missing in Mathlib
+- especially from algebraic topology - which be would need just to get to define the winding number.
+
+\section{Main formalized results}
+The very first thing we had to tackle, far from a lemma or theorem, was giving the right - this is, the
+most accurate one - definition of a curve. First we opted for defining it for an arbitrary interval $(a, b)$
+but we rapidly noticed this was unnecesary and the vast majority of the literature simply used the unit interval,
+so we decided to change to that.
+
+But that was not the unique thing we had to change about the structure definition of a (closed) curve. At the beginning, we opted
+for putting the continuity and differentiability conditions separately but, after hearing the given advices, we noticed
+the best option was to put them together using the \verb|ContDiffOn| condition from Mathlib library.
+
+\noindent \textbf{Remark 1:} we have also defined the concept of \textit{n-piecewise curve}, i.e., a curve that is the result
+of the concatenation of n simple curves. This is a more general concept than a curve itself and, even though
+we do not formalize theorems using them, we have thought it would be of interest to get them defined.
+
+\noindent \textbf{Remark 2:} the sign of the winding number depends on the orientation we choose for going along
+the curve or, in other words, if the curve winds \textit{clockwise} or \textit{counterclockwise} around the point.
+For the sake of simplicity, we have chosen the counterclockwise orientation as the default one. In the case a curve is given
+in the opposite orientation, we can always perform a change of basis to get back to desired scenario.
+
+The main results we have formalized are the following:
+\begin{theorem}
+    Given a curve $\gamma$ and a point $z_0$ satisfying (P), then
+    $$\omega(\gamma, z_0) \in \mathbb{Z}.$$
+    In other words, the winding number of a curve around a point is always an integer.
+\end{theorem}
+
+\begin{theorem}
+  The winding number $\omega(\gamma, z)$, seen as a function of $z$, is continuous in $\mathbb{C}\setminus \text{im}\gamma$.
+\end{theorem}
 \section{Main difficulties}
 Here is the main content of the article.
 
-\subsection{Subsection Example}
-This is a subsection.
+\subsection{Difficulties and, in some cases, solutions}
+DISCUSS!!!
 
 \section{Conclusion and possible future work}
-This is the conclusion of the article.
+DISCUSS!!!
 
 % References
 \begin{thebibliography}{9}
