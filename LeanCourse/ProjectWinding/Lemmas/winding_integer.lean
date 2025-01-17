@@ -208,9 +208,10 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I , γ t ≠ z)
             simp_all only [Set.mem_Icc, ne_eq, and_imp, differentiableAt_const,
             DifferentiableAt.sub_iff_left, g', h',
               φ, g]
-            have h_diff := γ.diff_curve
+            have h_diff := curve.Cont_derivOn γ.tocurve
             have hI : t ∈ I := by exact ht
-            have hNeigh : I ∈ nhds t := by sorry -- would be ideal to use DifferentiableOn.differentiableAt
+            have hNeigh : I ∈ nhds t := by {
+              apply Icc_mem_nhds}
             exact DifferentiableOn.differentiableAt h_diff hNeigh
           }
           apply deriv_mul
@@ -673,7 +674,7 @@ lemma contour_integral_eq_curve_integral_strong (γ : closed_curve) (h_circle : 
   have deriv_g : deriv g = fun (θ : ℝ) ↦ (2*π*Complex.I) *Complex.exp (2*π*Complex.I*θ) := by {
     exact deriv_eq deriv_aux_g
   }
-  have g'cont : ContinuousOn (deriv g) $ I := by {
+  have g'cont : Continuous (deriv g) := by {
     simp_rw[deriv_g]
     fun_prop
   }
@@ -681,7 +682,9 @@ lemma contour_integral_eq_curve_integral_strong (γ : closed_curve) (h_circle : 
     simp_rw[g]
     norm_num
   }
-  let g₁ : closed_curve := {toFun := g, diff_curve := gdiff', cont_deriv := g'cont, closed := g0g1}
+  let g₁ : closed_curve := {toFun := g, class_c1 := by {
+    rw [contDiff_one_iff_deriv]
+    exact ⟨gdiff, g'cont⟩}, closed := g0g1}
   have h_coinc : ∀ x ∈ Set.Ioo (0 : ℝ) 1, γ.toFun x = g₁.toFun x := by {
     intro x hx
     simp_rw[g]
