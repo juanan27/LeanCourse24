@@ -24,6 +24,11 @@ structure curve where
  toFun : ℝ → ℂ
  class_c1 : ContDiff ℝ 1 toFun
 
+ -- The aim of defining it on the whole ℝ is avoiding differentiability issues at the endpoints, but
+ -- this does not afect to the definition of the curve at all. We can see it as a map from [0, 1] to ℂ,
+ -- but it keeps winding again and again if we extend it to ℝ. This might not be trivial for simple curves,
+ -- but it is for closed curves. We well give a more detailed explanation later.
+
 -- It is sometimes useful to interpret curves as (ℝ → ℂ) maps
 instance : CoeFun curve fun _ => ℝ → ℂ := ⟨fun f => f.toFun⟩
 
@@ -43,15 +48,13 @@ lemma curve.DiffOn (γ : curve) : DifferentiableOn ℝ γ I := by {
   exact Differentiable.differentiableOn $ curve.Diff γ
 }
 
-lemma curve.Cont_derivWithin (γ : curve) : ContinuousOn (derivWithin γ I) I := by {
- exact ContDiffOn.continuousOn_derivWithin γ.class_c1 (uniqueDiffOn_Icc_zero_one) (le_refl 1)
-}
-
-
 lemma curve.Cont_derivOn (γ : curve) : ContinuousOn (deriv γ) $ I := by {
-  sorry
+  have hdiff : Continuous (deriv γ) := by {
+    apply ContDiff.continuous_deriv γ.class_c1
+    simp
+  }
+  exact Continuous.continuousOn hdiff
 }
-
 -- Let us now define the structure of a closed curve from the definition of curve. It inherits
 -- continuity and differentiability
 

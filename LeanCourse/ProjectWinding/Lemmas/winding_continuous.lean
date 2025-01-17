@@ -20,9 +20,14 @@ import Mathlib.Analysis.Calculus.Deriv.Pow
 import Mathlib.Analysis.SpecialFunctions.Integrals
 import Mathlib.Analysis.Convolution
 import Mathlib.Data.Real.Irrational
+import Mathlib.Tactic
+import Mathlib.Analysis.Complex.CauchyIntegral
 import Mathlib.MeasureTheory.Function.Jacobian
 import Mathlib.Algebra.GroupWithZero.Basic
+import Mathlib.MeasureTheory.Measure.MeasureSpaceDef
+import Mathlib.MeasureTheory.Function.L1Space
 import LeanCourse.ProjectWinding.Definitions.curves
+
 
 open DifferentiableOn Finset
 open BigOperators Function Set Real Topology Filter
