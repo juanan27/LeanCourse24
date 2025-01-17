@@ -39,6 +39,10 @@ lemma curve.ContOn (γ : curve) : ContinuousOn γ I := by {
   exact Continuous.continuousOn hcont
   }
 
+lemma curve.Cont (γ : curve) : Continuous γ := by {
+  exact γ.class_c1.continuous
+  }
+
 lemma curve.Diff (γ : curve) : Differentiable ℝ γ  := by {
   apply ContDiff.differentiable γ.class_c1
   simp
@@ -46,6 +50,11 @@ lemma curve.Diff (γ : curve) : Differentiable ℝ γ  := by {
 
 lemma curve.DiffOn (γ : curve) : DifferentiableOn ℝ γ I := by {
   exact Differentiable.differentiableOn $ curve.Diff γ
+}
+
+lemma curve.Cont_deriv (γ : curve) : Continuous (deriv γ) := by {
+  apply ContDiff.continuous_deriv γ.class_c1
+  simp
 }
 
 lemma curve.Cont_derivOn (γ : curve) : ContinuousOn (deriv γ) $ I := by {
@@ -70,14 +79,26 @@ instance : CoeFun (closed_curve) fun _ => ℝ → ℂ := ⟨fun f => f.toFun⟩
 def curve.is_closed {a b : ℝ} (γ : curve) : Prop :=
   γ.toFun a = γ.toFun b
 
-lemma closed_curve.Cont (γ : closed_curve) : ContinuousOn γ I := by {
+lemma closed_curve.Cont (γ : closed_curve) : Continuous γ := by {
+  exact curve.Cont γ.tocurve
+  }
+
+lemma closed_curve.ContOn (γ : closed_curve) : ContinuousOn γ I := by {
   exact curve.ContOn γ.tocurve
 }
 
-lemma closed_curve.Diff (γ : closed_curve) : DifferentiableOn ℝ γ I := by {
+lemma closed_curve.Diff (γ : closed_curve) : Differentiable ℝ γ := by {
+  exact curve.Diff γ.tocurve
+}
+
+lemma closed_curve.DiffOn (γ : closed_curve) : DifferentiableOn ℝ γ I := by {
   exact curve.DiffOn γ.tocurve
 }
 
+lemma closed_curve.Cont_deriv (γ : closed_curve) : Continuous (deriv γ) := by {
+  apply ContDiff.continuous_deriv γ.class_c1
+  simp
+}
 -- To generalize, we can define piecewise curves:
 
 structure piecewiseCurve (n : ℕ) where

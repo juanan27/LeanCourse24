@@ -182,12 +182,16 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I , γ t ≠ z)
   }
   let g := fun t : ℝ  => ∫ s in (0)..(t), (deriv γ s) / (γ s - z)
   let h' := fun s : ℝ ↦ deriv γ s
-  have hg : ContinuousOn h' (I) := by {
-  exact curve.Cont_derivOn γ.tocurve
+  have hg : Continuous h' := by {
+  unfold h'
+  suffices h_aux : Continuous (deriv γ)
+  · exact h_aux
+  · exact closed_curve.Cont_deriv γ
   }
   have h_vanish : ∀ s ∈ I, g' s ≠ 0 := by exact fun s a ↦ sub_ne_zero_of_ne (h s a)
   let φ := fun s : ℝ ↦ (h' s / g' s)
-  have h_cont : ContinuousOn φ (I) := by {
+  have h_cont : Continuous φ := by {
+    unfold φ
     exact division_continuous h' g' hg hg' h_vanish
   }
   have hg'' : ∀ t ∈ I, deriv g t = (deriv γ t) / (γ t - z) := by {
@@ -197,8 +201,8 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I , γ t ≠ z)
   · exact ht
   }
   let ψ : ℝ → ℂ := fun t ↦ Complex.exp (- ∫ s in (0)..t, deriv γ s / (γ s - z)) * (γ t - z)
-  have deriv₀ : ∀ t ∈ I, deriv ψ t = 0 := by {
-    intro t ht
+  have deriv₀ : ∀ t : ℝ, deriv ψ t = 0 := by {
+    intro t
     --have hψ : ψ t = Complex.exp (-g t ) * (γ t - z) := by exact rfl
     calc
       deriv ψ t
@@ -208,11 +212,8 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I , γ t ≠ z)
             simp_all only [Set.mem_Icc, ne_eq, and_imp, differentiableAt_const,
             DifferentiableAt.sub_iff_left, g', h',
               φ, g]
-            have h_diff := curve.Cont_derivOn γ.tocurve
-            have hI : t ∈ I := by exact ht
-            have hNeigh : I ∈ nhds t := by {
-              apply Icc_mem_nhds}
-            exact DifferentiableOn.differentiableAt h_diff hNeigh
+            have hγdiff : Differentiable ℝ γ.toFun := by exact curve.Diff γ.tocurve
+            exact Differentiable.differentiableAt hγdiff
           }
           apply deriv_mul
           · have haux : DifferentiableAt ℝ (fun y ↦ - ∫ (s : ℝ) in (0)..y, deriv γ.toFun s / (γ.toFun s - z)) t := by {
@@ -233,7 +234,9 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t ∈ I , γ t ≠ z)
               simp_all only [Set.mem_Icc, ne_eq, and_imp, Set.uIcc_of_le]
               exact h_cont.mono h_sub
             }
-            sorry
+            apply DifferentiableOn.differentiableAt
+            · apply intervalIntegral.differentiableOn_integral_of_continuous hintg h_cont
+
           }
           · exact h₁
         }
