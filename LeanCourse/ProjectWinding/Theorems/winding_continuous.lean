@@ -15,9 +15,10 @@ open Classical
 
 -- The index function is continuous
 
--- CHANGE PROOF TO THE CLASSICAL ONE
 
-theorem ω_continuous {t : ℝ} (γ : closed_curve) (z : ℂ) (h : ∀ z ∈ (univ \ (image γ I)), γ t - z ≠ 0)
-: ContinuousOn ω (univ \ (image γ I))  := by {
+theorem ω_continuous (γ : closed_curve) (z : ℂ) (h : z ∉ γ '' I)
+: ContinuousOn (fun z => 1/(2*Real.pi*Complex.I) *  ∫ t in I, (deriv γ t) / (γ t - z)) ((univ \ (image γ I)) : Set ℂ )  := by {
+  rw[Metric.continuousOn_iff]
+  intro z₀ hz₀ ε hε
   sorry
 }
