@@ -263,7 +263,30 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z)
             field_simp
             simp_all only [differentiableAt_neg_iff, deriv_cexp, deriv.neg', mul_neg, neg_inj, mul_eq_mul_left_iff,
               Complex.exp_ne_zero, or_false, isUnit_iff_ne_zero, ne_eq, not_false_eq_true, IsUnit.div_mul_cancel]
-            sorry
+            have hequ : -(cexp (-∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) * deriv γ.toFun t * (γ.toFun t - z)) / (γ.toFun t - z) + cexp (-∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) * deriv (fun t ↦ γ.toFun t - z) t = 0 ↔
+             (cexp (-∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) * deriv γ.toFun t * (γ.toFun t - z)) / (γ.toFun t - z) = cexp (-∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) * deriv (fun t ↦ γ.toFun t - z) t := by {
+              constructor
+              · intro ht₁
+                sorry
+              · intro ht₂
+                rw[← ht₂]
+                ring
+             }
+            rw[hequ]
+            have hsufeq : cexp (-∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) * deriv γ.toFun t * (γ.toFun t - z) / (γ.toFun t - z) = cexp (-∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) * deriv γ.toFun t := by {
+              exact
+                mul_div_cancel_right₀
+                  (cexp (-∫ (s : ℝ) in (0 )..t, deriv γ.toFun s / (γ.toFun s - z)) * deriv γ.toFun t)
+                  (h_vanish t)
+            }
+            rw[hsufeq]
+            have hderiv_γ : deriv γ.toFun t = deriv (fun t ↦ γ.toFun t - z) t := by {
+              exact Eq.symm (deriv_sub_const z)
+            }
+            exact
+              congrArg (HMul.hMul (cexp (-∫ (s : ℝ) in (0 )..t, deriv γ.toFun s / (γ.toFun s - z))))
+                hderiv_γ
+
           }
           rw [hdivaux]
           ring
