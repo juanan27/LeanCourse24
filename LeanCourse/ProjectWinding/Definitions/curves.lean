@@ -192,4 +192,6 @@ def CircleCurve_whole (γ : closed_curve) : Prop := (γ.toFun = (fun (θ : ℝ) 
 
 noncomputable def length (γ : curve) : ℝ := ∫ t in I, Complex.abs (deriv γ t)
 
+noncomputable def integral_over_curve (γ : curve) (f : ℂ → ℂ) : ℂ := ∫ t in I, f (γ t) * deriv γ t
+
 #min_imports

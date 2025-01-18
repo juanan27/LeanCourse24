@@ -31,7 +31,6 @@ import LeanCourse.ProjectWinding.Definitions.curves
 open DifferentiableOn Finset
 open BigOperators Function Set Real Topology Filter
 open MeasureTheory Interval Convolution ENNReal
---open scoped Real NNReal Interval Pointwise Topology
 open Complex MeasureTheory TopologicalSpace Metric Function Set Filter Asymptotics
 open Set unitInterval Finset Metric
 
@@ -39,98 +38,13 @@ noncomputable section
 
 open Classical
 
-theorem division_continuous (f : ℝ → ℂ ) (g : ℝ → ℂ ) (h : ContinuousOn f (I))
-(h' : ContinuousOn g (I)) (h_v : ∀ s ∈ I, g s ≠ 0) : ContinuousOn (fun s ↦ f s / g s) (I) := by {
-apply h.div
-exact h'
-exact fun x a ↦ h_v x a
-}
-
-theorem division_continuous_ball (f : ℂ → ℂ ) (g : ℂ → ℂ ) (h : ContinuousOn f (closedBall 0 1))
-(h' : ContinuousOn g (closedBall 0 1)) (h_v : ∀ s ∈ closedBall 0 1, g s ≠ 0) : ContinuousOn (fun s ↦ f s / g s) (closedBall 0 1) := by {
-  apply h.div
-  exact h'
-  exact fun x a ↦ h_v x a}
-
-theorem inverse_continuous_ball (g : ℂ → ℂ)
-(h : ContinuousOn g (closedBall 0 1)) (h_v : ∀ s ∈ closedBall 0 1, g s ≠ 0) : ContinuousOn (fun s ↦ 1 / g s) (closedBall 0 1) := by {
-  let f : ℂ → ℂ := fun z ↦ 1
-  have hf : ContinuousOn f (closedBall 0 1) := by exact continuousOn_const
-  have hquot : ContinuousOn (fun s ↦ f s / g s) (closedBall 0 1) := by exact division_continuous_ball f g hf h h_v
-  exact hquot
-}
-theorem inverse_continuous_ball_2 (g : ℂ → ℂ)
-(h : ContinuousOn g (closedBall 0 1)) (h_v : ∀ s ∈ closedBall 0 1, g s ≠ 0) : ContinuousOn (fun s ↦ (g s)⁻¹) (closedBall 0 1) := by
-{
-  have hs0 : ∀ s ∈ closedBall 0 1, 1 / g s  = (g s)⁻¹ := by {
-    norm_num
-  }
-  have heq : ContinuousOn (fun s ↦ 1 / (g s)) (closedBall 0 1) ↔ ContinuousOn (fun s ↦ (g s)⁻¹) (closedBall 0 1) := by exact continuousOn_congr hs0
-  rw[← heq]
-  exact inverse_continuous_ball g h h_v
-}
--- We write the same theorems in the differentiable version
-
-theorem division_differentiable (f : ℂ → ℂ ) (g : ℂ → ℂ ) (hf : Differentiable ℂ f) (hg : Differentiable ℂ g ) (h₀ : ∀ z, g z ≠ 0):
- Differentiable ℂ (fun s ↦ f s / g s) := by {
-  apply hf.div
-  trivial
-  tauto
- }
-
-theorem inverse_differentiable (g : ℂ → ℂ)
-(h : Differentiable ℂ g ) (h_v : ∀ s, g s ≠ 0) : Differentiable ℂ (fun s ↦ 1 / g s)  := by {
-let f : ℂ → ℂ := fun z ↦ 1
-have hf : Differentiable ℂ f := by exact differentiable_const 1
-have hqout : Differentiable ℂ (fun s ↦ 1 / g s) := by exact division_differentiable (fun s ↦ 1) g hf h h_v
-exact hqout
-}
-
-theorem division_differentiable_ball (f : ℂ → ℂ ) (g : ℂ → ℂ ) (hf : ∀ z_1 ∈ closedBall 0 1, DifferentiableAt ℂ f z_1) (hg : ∀ z_1 ∈ closedBall 0 1, DifferentiableAt ℂ g z_1 ) (h₀ : ∀ z, g z ≠ 0):
- ∀ z_1 ∈ closedBall 0 1, DifferentiableAt ℂ (fun s ↦ f s / g s) z_1 := by {
-  intro z_1 h_z1
-  specialize hf z_1 h_z1
-  specialize hg z_1 h_z1
-  apply hf.div
-  · exact hg
-  · tauto
- }
-
-theorem inverse_differentiable_ball (g : ℂ → ℂ)
-(h : ∀ z_1 ∈ closedBall 0 1, DifferentiableAt ℂ g z_1) (h_v : ∀ s ∈ closedBall 0 1, g s ≠ 0) : ∀ s ∈ closedBall 0 1, DifferentiableAt ℂ (fun s ↦ 1 / g s) s  := by {
-  let f : ℂ → ℂ := fun z ↦ 1
-  intro s hs
-  have hf : ∀ s ∈ closedBall 0 1, DifferentiableAt  ℂ f s := by exact fun s a ↦ differentiableAt_const 1
-  have hquot : ∀ s ∈ closedBall 0 1, DifferentiableAt ℂ  (fun s ↦ f s / g s) s := by exact fun s a ↦ DifferentiableAt.div (hf s a) (h s a) (h_v s a)
-  exact hquot s hs
-  }
-theorem inverse_differentiable_ball_2 (g : ℂ → ℂ)
-(h : ∀ z_1 ∈ closedBall 0 1, DifferentiableAt ℂ g z_1) (h_v : ∀ s ∈ closedBall 0 1, g s ≠ 0) : ∀ s ∈ closedBall 0 1, DifferentiableAt ℂ (fun s ↦ (g s)⁻¹) s  := by {
-  intro s hs
-  exact DifferentiableAt.inv (h s hs) (h_v s hs)
-}
-
-lemma ftc (f : ℝ → ℂ) (hf : Continuous f) (a b : ℝ) :
-    deriv (fun u ↦ ∫ x : ℝ in a..u, f x) b = f b :=
-  (hf.integral_hasStrictDerivAt a b).hasDerivAt.deriv
--- We prove now that the winding number is always an integer. We introduce the following lemma:
-
-lemma exp_one (z : ℂ) (h_1 : Complex.exp z = 1) : ∃ k : ℤ, z = 2 * Real.pi * k * Complex.I := by {
-  have h : Complex.exp z = 1 → ∃ n : ℤ , z = n * (2 * ↑π * Complex.I) := by exact Complex.exp_eq_one_iff.1
-  have h' : ∃ n : ℤ , z = ↑n * (2 * ↑π * Complex.I) := h h_1
-  obtain ⟨ n, hn ⟩ := h'
-  use n
-  simp[hn]
-  ring
-  }
-
 -- We are ready to show ω is an integer
 
 theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z)
 : ∃ n : ℤ, ω z γ = n := by {
   unfold ω
-  have hz : Continuous (fun s : ℝ  ↦ z) := by exact continuous_const
-  have hγ : Continuous (fun s : ℝ ↦ γ s) := by exact closed_curve.Cont γ
+  have hz : Continuous $ fun s : ℝ  ↦ z := by exact continuous_const
+  have hγ : Continuous $ fun s : ℝ ↦ γ s := by exact closed_curve.Cont γ
   let g' := fun s : ℝ ↦ γ s - z
   have hg' : Continuous g' := by {
     unfold g'
@@ -142,12 +56,12 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z)
 
   have hh' : Continuous h' := by {
   unfold h'
-  suffices h_aux : Continuous (deriv γ)
+  suffices h_aux : Continuous $ deriv γ
   · exact h_aux
   · exact closed_curve.Cont_deriv γ
   }
 
-  have h_vanish : ∀ s : ℝ, g' s ≠ 0 := by exact fun s ↦ sub_ne_zero_of_ne (h s)
+  have h_vanish : ∀ s : ℝ, g' s ≠ 0 := by exact fun s ↦ sub_ne_zero_of_ne $ h s
 
   let φ := fun s : ℝ ↦ (h' s / g' s)
 
@@ -163,6 +77,7 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z)
   }
 
   let ψ : ℝ → ℂ := fun t ↦ Complex.exp (- ∫ s in (0)..t, deriv γ s / (γ s - z)) * (γ t - z)
+
   have hdiff : ∀ t : ℝ, DifferentiableAt ℝ (fun t ↦ -∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) t := by {
               intro t
               simp only [differentiableAt_neg_iff]
@@ -184,7 +99,7 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z)
                 apply Continuous.integrableOn_Ioc
                 exact h_cont
               }
-                exact Filter.Eventually.of_forall (fun x =>
+                exact Filter.Eventually.of_forall $ fun x =>
                   let h_int1 : IntegrableOn (fun x ↦ deriv γ.toFun x / (γ.toFun x - z)) (Set.Ioc 0 x) volume := by {
                     apply Continuous.integrableOn_Ioc
                     exact h_cont
@@ -193,7 +108,7 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z)
                     apply Continuous.integrableOn_Ioc
                     exact h_cont
                   }
-                  And.intro h_int1 h_int2)
+                  And.intro h_int1 h_int2
                }
   have deriv₀ : ∀ t : ℝ, deriv ψ t = 0 := by {
     intro t
@@ -209,7 +124,7 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z)
             exact Differentiable.differentiableAt hγdiff
           }
           apply deriv_mul
-          · exact DifferentiableAt.cexp (hdiff t)
+          · exact DifferentiableAt.cexp $ hdiff t
 
           · exact h₁
         }
@@ -218,7 +133,7 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z)
           rw [div_mul_cancel₀
               (-Complex.exp (-∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) *
                 deriv γ.toFun t)
-              (h_vanish t)]
+              $ h_vanish t]
           simp_all only [ne_eq, Set.mem_Icc, and_imp, neg_mul, neg_add_cancel, g', h', φ, g]
           have heqcal : deriv (fun t ↦ cexp (-∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z))) t =
           -cexp (-∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) * (deriv γ.toFun t / (γ.toFun t - z)) := by {
@@ -226,7 +141,7 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z)
             have hstep1 : deriv (fun x ↦ cexp (-∫ (s : ℝ) in (0)..x, deriv γ.toFun s / (γ.toFun s - z))) t =
             cexp (-∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) *
             deriv (fun t ↦ -∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) t := by {
-              exact deriv_cexp (hdiff t)
+              exact deriv_cexp $ hdiff t
             }
             have hstep2 : (fun u ↦ -∫ (x : ℝ) in (0)..u, deriv γ.toFun x / (γ.toFun x - z)) =
             (fun u ↦ ∫ (x : ℝ) in (0)..u, - deriv γ.toFun x / (γ.toFun x - z)) := by {
@@ -243,7 +158,7 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z)
             - deriv γ.toFun t / (γ.toFun t - z) := by {
               rw [hstep2]
               apply Continuous.deriv_integral
-              · exact Continuous.div (Continuous.neg (closed_curve.Cont_deriv γ)) hg' h_vanish
+              · exact Continuous.div (Continuous.neg $ closed_curve.Cont_deriv γ) hg' h_vanish
             }
             rw [hstep1]
             rw [hstep3]
@@ -253,7 +168,7 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z)
           simp_all only [ne_eq, Set.mem_Icc, and_imp, neg_mul, neg_add_cancel, g', h', φ, g]
           have div : (deriv γ.toFun t / (γ.toFun t - z)) *
           (γ.toFun t - z) = deriv γ.toFun t := by {
-            rw [div_mul_cancel₀ (deriv γ.toFun t) (h_vanish t)]
+            rw [div_mul_cancel₀ (deriv γ.toFun t) $ h_vanish t]
            }
           have hdivaux : -(cexp (-∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) * (deriv γ.toFun t / (γ.toFun t - z)) *
           (γ.toFun t - z)) +
@@ -267,7 +182,20 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z)
              (cexp (-∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) * deriv γ.toFun t * (γ.toFun t - z)) / (γ.toFun t - z) = cexp (-∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) * deriv (fun t ↦ γ.toFun t - z) t := by {
               constructor
               · intro ht₁
-                sorry
+                have his1 : (γ.toFun t - z) / (γ.toFun t - z) = 1:= by {
+                  exact div_self $ h_vanish t
+                }
+                have h_lhs :
+                 cexp (-∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) * deriv γ.toFun t * (γ.toFun t - z) /
+                (γ.toFun t - z) =
+                cexp (-∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) * deriv γ.toFun t := by
+                {simp [mul_div_assoc, his1, mul_one]}
+                have h_rhs :
+                cexp (-∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) * deriv (fun t ↦ γ.toFun t - z) t =
+                cexp (-∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) * deriv γ.toFun t := by
+                {simp [deriv_sub, deriv_const, sub_zero]; exact deriv_sub_const z}
+                rw [h_lhs, h_rhs]
+
               · intro ht₂
                 rw[← ht₂]
                 ring
@@ -276,15 +204,15 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z)
             have hsufeq : cexp (-∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) * deriv γ.toFun t * (γ.toFun t - z) / (γ.toFun t - z) = cexp (-∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) * deriv γ.toFun t := by {
               exact
                 mul_div_cancel_right₀
-                  (cexp (-∫ (s : ℝ) in (0 )..t, deriv γ.toFun s / (γ.toFun s - z)) * deriv γ.toFun t)
-                  (h_vanish t)
+                  (cexp (-∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) * deriv γ.toFun t)
+                  $ h_vanish t
             }
             rw[hsufeq]
             have hderiv_γ : deriv γ.toFun t = deriv (fun t ↦ γ.toFun t - z) t := by {
-              exact Eq.symm (deriv_sub_const z)
+              exact Eq.symm $ deriv_sub_const z
             }
             exact
-              congrArg (HMul.hMul (cexp (-∫ (s : ℝ) in (0 )..t, deriv γ.toFun s / (γ.toFun s - z))))
+              congrArg (HMul.hMul $ cexp (-∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)))
                 hderiv_γ
 
           }
@@ -296,7 +224,7 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z)
           rw [div_mul_cancel₀
               (-Complex.exp (-∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) *
                 deriv γ.toFun t)
-              (h_vanish t)]
+              $ h_vanish t]
         }
     _ = 0 := by ring
     }
@@ -383,7 +311,7 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z)
     ring
   }
   obtain ⟨m, hm⟩ := h_minus
-  -- It is sufficient to prove the following:
+  -- It suffices to prove the following:
   have hsuff : ∃ n : ℤ, ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - z) = 2 * Real.pi * ↑n * Complex.I := by {
     have h_eq : ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - z) = ∫ (t : ℝ) in (0)..1, deriv γ.toFun t / (γ.toFun t - z) := by {
       rw [intervalIntegral.integral_of_le]
@@ -400,10 +328,12 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z)
     exact pi_ne_zero
   }
   field_simp[hsuff, not_zero]
-  have h_equal : ∀ n : ℤ, (n : ℂ) * (2 * ↑π * Complex.I) = 2 * ↑π * (n:ℂ ) * Complex.I := by {
+  have h_equal : ∀ n : ℤ, (n : ℂ) * (2 * ↑π * Complex.I) = 2 * ↑π * (n : ℂ) * Complex.I := by {
     intro n
     ring
   }
   simp[h_equal]
   exact hsuff
 }
+
+#min_imports

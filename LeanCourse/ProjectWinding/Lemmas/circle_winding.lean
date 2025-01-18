@@ -43,27 +43,27 @@ open Classical
 /- We want to evaluate the values of ω when γ is the unit circle. In Mathlib, there are some lemmas which help
     to solve this. However, they are based on the structure CircleMap.
 -/
-theorem division_continuous (f : ℝ → ℂ ) (g : ℝ → ℂ ) (h : ContinuousOn f (I))
-(h' : ContinuousOn g (I)) (h_v : ∀ s ∈ I, g s ≠ 0) : ContinuousOn (fun s ↦ f s / g s) (I) := by {
+lemma division_continuous {f : ℝ → ℂ}  {g : ℝ → ℂ}  (h : ContinuousOn f I)
+(h' : ContinuousOn g I) (h_v : ∀ s ∈ I, g s ≠ 0) : ContinuousOn (fun s ↦ f s / g s) I := by {
 apply h.div
 exact h'
 exact fun x a ↦ h_v x a
 }
 
-theorem division_continuous_ball (f : ℂ → ℂ ) (g : ℂ → ℂ ) (h : ContinuousOn f (closedBall 0 1))
+lemma division_continuous_ball {f : ℂ → ℂ} {g : ℂ → ℂ} (h : ContinuousOn f $ closedBall 0 1)
 (h' : ContinuousOn g (closedBall 0 1)) (h_v : ∀ s ∈ closedBall 0 1, g s ≠ 0) : ContinuousOn (fun s ↦ f s / g s) (closedBall 0 1) := by {
   apply h.div
   exact h'
   exact fun x a ↦ h_v x a}
 
-theorem inverse_continuous_ball (g : ℂ → ℂ)
+lemma inverse_continuous_ball (g : ℂ → ℂ)
 (h : ContinuousOn g (closedBall 0 1)) (h_v : ∀ s ∈ closedBall 0 1, g s ≠ 0) : ContinuousOn (fun s ↦ 1 / g s) (closedBall 0 1) := by {
   let f : ℂ → ℂ := fun z ↦ 1
   have hf : ContinuousOn f (closedBall 0 1) := by exact continuousOn_const
   have hquot : ContinuousOn (fun s ↦ f s / g s) (closedBall 0 1) := by exact division_continuous_ball f g hf h h_v
   exact hquot
 }
-theorem inverse_continuous_ball_2 (g : ℂ → ℂ)
+lemma inverse_continuous_ball_2 (g : ℂ → ℂ)
 (h : ContinuousOn g (closedBall 0 1)) (h_v : ∀ s ∈ closedBall 0 1, g s ≠ 0) : ContinuousOn (fun s ↦ (g s)⁻¹) (closedBall 0 1) := by
 {
   have hs0 : ∀ s ∈ closedBall 0 1, 1 / g s  = (g s)⁻¹ := by {
@@ -75,14 +75,14 @@ theorem inverse_continuous_ball_2 (g : ℂ → ℂ)
 }
 -- We write the same theorems in the differentiable version
 
-theorem division_differentiable (f : ℂ → ℂ ) (g : ℂ → ℂ ) (hf : Differentiable ℂ f) (hg : Differentiable ℂ g ) (h₀ : ∀ z, g z ≠ 0):
+lemma division_differentiable (f : ℂ → ℂ ) (g : ℂ → ℂ ) (hf : Differentiable ℂ f) (hg : Differentiable ℂ g ) (h₀ : ∀ z, g z ≠ 0):
  Differentiable ℂ (fun s ↦ f s / g s) := by {
   apply hf.div
   trivial
   tauto
  }
 
-theorem inverse_differentiable (g : ℂ → ℂ)
+lemma inverse_differentiable {g : ℂ → ℂ}
 (h : Differentiable ℂ g ) (h_v : ∀ s, g s ≠ 0) : Differentiable ℂ (fun s ↦ 1 / g s)  := by {
 let f : ℂ → ℂ := fun z ↦ 1
 have hf : Differentiable ℂ f := by exact differentiable_const 1
@@ -90,7 +90,7 @@ have hqout : Differentiable ℂ (fun s ↦ 1 / g s) := by exact division_differe
 exact hqout
 }
 
-theorem division_differentiable_ball (f : ℂ → ℂ ) (g : ℂ → ℂ ) (hf : ∀ z_1 ∈ closedBall 0 1, DifferentiableAt ℂ f z_1) (hg : ∀ z_1 ∈ closedBall 0 1, DifferentiableAt ℂ g z_1 ) (h₀ : ∀ z, g z ≠ 0):
+lemma division_differentiable_ball {f : ℂ → ℂ} {g : ℂ → ℂ} (hf : ∀ z_1 ∈ closedBall 0 1, DifferentiableAt ℂ f z_1) (hg : ∀ z_1 ∈ closedBall 0 1, DifferentiableAt ℂ g z_1 ) (h₀ : ∀ z, g z ≠ 0):
  ∀ z_1 ∈ closedBall 0 1, DifferentiableAt ℂ (fun s ↦ f s / g s) z_1 := by {
   intro z_1 h_z1
   specialize hf z_1 h_z1
@@ -100,7 +100,7 @@ theorem division_differentiable_ball (f : ℂ → ℂ ) (g : ℂ → ℂ ) (hf :
   · tauto
  }
 
-theorem inverse_differentiable_ball (g : ℂ → ℂ)
+lemma inverse_differentiable_ball {g : ℂ → ℂ}
 (h : ∀ z_1 ∈ closedBall 0 1, DifferentiableAt ℂ g z_1) (h_v : ∀ s ∈ closedBall 0 1, g s ≠ 0) : ∀ s ∈ closedBall 0 1, DifferentiableAt ℂ (fun s ↦ 1 / g s) s  := by {
   let f : ℂ → ℂ := fun z ↦ 1
   intro s hs
@@ -108,11 +108,27 @@ theorem inverse_differentiable_ball (g : ℂ → ℂ)
   have hquot : ∀ s ∈ closedBall 0 1, DifferentiableAt ℂ  (fun s ↦ f s / g s) s := by exact fun s a ↦ DifferentiableAt.div (hf s a) (h s a) (h_v s a)
   exact hquot s hs
   }
-theorem inverse_differentiable_ball_2 (g : ℂ → ℂ)
+
+lemma inverse_differentiable_ball_2 {g : ℂ → ℂ}
 (h : ∀ z_1 ∈ closedBall 0 1, DifferentiableAt ℂ g z_1) (h_v : ∀ s ∈ closedBall 0 1, g s ≠ 0) : ∀ s ∈ closedBall 0 1, DifferentiableAt ℂ (fun s ↦ (g s)⁻¹) s  := by {
   intro s hs
   exact DifferentiableAt.inv (h s hs) (h_v s hs)
 }
+
+lemma ftc {f : ℝ → ℂ} (hf : Continuous f) (a b : ℝ) :
+    deriv (fun u ↦ ∫ x : ℝ in a..u, f x) b = f b :=
+  (hf.integral_hasStrictDerivAt a b).hasDerivAt.deriv
+-- We prove now that the winding number is always an integer. We introduce the following lemma:
+
+lemma exp_one (z : ℂ) (h_1 : Complex.exp z = 1) : ∃ k : ℤ, z = 2 * Real.pi * k * Complex.I := by {
+  have h : Complex.exp z = 1 → ∃ n : ℤ , z = n * (2 * ↑π * Complex.I) := by exact Complex.exp_eq_one_iff.1
+  have h' : ∃ n : ℤ , z = ↑n * (2 * ↑π * Complex.I) := h h_1
+  obtain ⟨ n, hn ⟩ := h'
+  use n
+  simp[hn]
+  ring
+  }
+
 -- For this reason, we first show the following useful equality:
 
 lemma contour_integral_eq_curve_integral (γ : closed_curve) (h_circle : CircleCurve_whole γ) (z : ℂ ):
