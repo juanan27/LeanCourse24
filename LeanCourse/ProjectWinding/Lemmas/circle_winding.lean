@@ -63,7 +63,7 @@ lemma contour_integral_eq_curve_integral (γ : closed_curve) (h_circle : CircleC
       ring_nf
     }
     have hsubs : ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - z) = ∫ (t : ℝ) in I, deriv γ.toFun t / (cexp («I» * 2 * ↑π * ↑t) - z) := by {
-      refine setIntegral_congr_ae₀ ?hs ?h -- should be easy to show
+      refine setIntegral_congr_ae₀ ?hs ?h
       · exact nullMeasurableSet_Icc
       · have haux : ∀ x ∈ I, deriv γ.toFun x / (γ.toFun x - z) = deriv γ.toFun x / (cexp («I» * 2 * ↑π * ↑x) - z) := by
           exact fun x a ↦ congrArg (HDiv.hDiv (deriv γ.toFun x)) (congrFun (congrArg HSub.hSub (h_circle_2 x a)) z)
@@ -76,7 +76,7 @@ lemma contour_integral_eq_curve_integral (γ : closed_curve) (h_circle : CircleC
         let e : ℂ → ℂ := (fun x ↦ x*y)
         let h₂ : ℂ → ℂ := (fun z ↦ cexp z)
         have h : HasDerivAt e y (x : ℂ) := by exact hasDerivAt_mul_const y
-        have h' : HasDerivAt h₁ y x := by exact HasDerivAt.comp_ofReal (e := e) (e' := y) (hf := h) -- By hint
+        have h' : HasDerivAt h₁ y x := by exact HasDerivAt.comp_ofReal (e := e) (e' := y) (hf := h)
         have hh2 : HasDerivAt h₂ (cexp (h₁ x)) (h₁ x) := by exact Complex.hasDerivAt_exp (h₁ x)
         have hder : HasDerivAt (h₂ ∘ h₁) (cexp (h₁ x) * y ) x := by exact HasDerivAt.comp x hh2 h'
         have hxy : x * y = h₁ x := by exact rfl
@@ -339,12 +339,6 @@ lemma contour_integral_eq_curve_integral_strong (γ : closed_curve) (h_circle : 
   exact contour_integral_eq_curve_integral g₁ rfl z
 }
 
-#check Set.Icc 0 (2*π)
-
-#check set_integral_congr_ae₀
-#check MeasureTheory.setIntegral_congr_ae₀
-#check integral_image_eq_integral_abs_deriv_smul
-#check mul_comm
 
 lemma winding_circle_inside (γ : closed_curve) (h_circle : ∀ t ∈ I, γ t = Complex.exp (Complex.I * 2*π* t)) (z : ℂ ) (h : norm z < 1) : ω z γ = 1 := by {
   unfold ω
@@ -380,7 +374,7 @@ lemma winding_circle_inside (γ : closed_curve) (h_circle : ∀ t ∈ I, γ t = 
       (fun (z_1 : ℂ)  ↦ (z_1 - z)⁻¹) z_1 := by {
         exact contour_integral_eq_curve_integral_strong γ h_circle z}
       rw[h_1]
-      apply Complex.circleIntegral_eq_zero_of_differentiable_on_off_countable
+      apply Complex.circleIntegral_eq_zero_of_differentiable_on_off_countable -- Cauchy's Theorem
         (f := fun (z_1 : ℂ)  ↦ (z_1 - z)⁻¹ ) (s := ∅)
       · exact countable_empty
       · have hz_1 : ∀ z_1 ∈ (closedBall 0 1), z_1 - z ≠ 0 := by {
