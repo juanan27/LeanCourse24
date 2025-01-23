@@ -103,7 +103,7 @@ lemma closed_curve.Cont_deriv (γ : closed_curve) : Continuous (deriv γ) := by 
 
 structure piecewiseCurve (n : ℕ) where
   curves : Fin n → curve
-
+  -- glueing : ∀ i : Fin n → curves i 1 = curves (i + 1) 0
 -- A curve can be seen as a 1-curve piecewise curve:
 
 instance : Coe curve (piecewiseCurve 1) where

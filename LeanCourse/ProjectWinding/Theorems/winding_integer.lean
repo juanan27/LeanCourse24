@@ -1,12 +1,10 @@
 import Mathlib.Data.Real.Basic
-import Mathlib.Analysis.Calculus.FDeriv.Basic
 import Mathlib.Analysis.Calculus.Deriv.Basic
 import Mathlib.Data.Complex.Basic
 import Mathlib.MeasureTheory.Integral.IntervalIntegral
 import Mathlib.Analysis.Calculus.FDeriv.Basic
 import Mathlib.Analysis.Normed.Field.Basic
 import Mathlib.Data.Finset.Basic
-import Mathlib.Analysis.Calculus.FDeriv.Mul
 import Mathlib.Analysis.Calculus.Deriv.Mul
 import Mathlib.Analysis.Calculus.Deriv.Add
 import Mathlib.Topology.Algebra.ConstMulAction
@@ -14,23 +12,16 @@ import Mathlib.Analysis.Calculus.Deriv.Comp
 import Mathlib.Topology.ContinuousOn
 import Mathlib.Order.Interval.Basic
 import Mathlib.Topology.UnitInterval
-import Mathlib.Analysis.SpecialFunctions.Trigonometric.Deriv
 import Mathlib.Analysis.Calculus.Deriv.Prod
 import Mathlib.Analysis.Calculus.Deriv.Pow
-import Mathlib.Analysis.SpecialFunctions.Integrals
-import Mathlib.Analysis.Convolution
-import Mathlib.Data.Real.Irrational
 import Mathlib.Tactic
 import Mathlib.Analysis.Complex.CauchyIntegral
-import Mathlib.MeasureTheory.Function.Jacobian
 import Mathlib.Algebra.GroupWithZero.Basic
-import Mathlib.MeasureTheory.Measure.MeasureSpaceDef
-import Mathlib.MeasureTheory.Function.L1Space
 import LeanCourse.ProjectWinding.Definitions.curves
 
 open DifferentiableOn Finset
 open BigOperators Function Set Real Topology Filter
-open MeasureTheory Interval Convolution ENNReal
+open MeasureTheory Interval ENNReal
 open Complex MeasureTheory TopologicalSpace Metric Function Set Filter Asymptotics
 open Set unitInterval Finset Metric
 
@@ -59,8 +50,6 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z)
     unfold g'
     exact Continuous.sub hγ hz
   }
-  let g := fun t : ℝ  => ∫ s in (0)..(t), (deriv γ s) / (γ s - z)
-
   let h' := fun s : ℝ ↦ deriv γ s
 
   have hh' : Continuous h' := by {
@@ -78,6 +67,9 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z)
     unfold φ
     exact Continuous.div hh' hg' h_vanish
   }
+
+  let g := fun t : ℝ  => ∫ s in (0)..(t), (deriv γ s) / (γ s - z)
+
   have hg'' : ∀ t : ℝ, deriv g t = (deriv γ t) / (γ t - z) := by {
   intro t
   unfold g
@@ -85,10 +77,12 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z)
   exact h_cont
   }
 
+
   let ψ : ℝ → ℂ := fun t ↦ Complex.exp (- ∫ s in (0)..t, deriv γ s / (γ s - z)) * (γ t - z)
 
-  have hdiff : ∀ t : ℝ, DifferentiableAt ℝ (fun t ↦ -∫ (s : ℝ) in (0)..t, deriv γ.toFun s / (γ.toFun s - z)) t := by {
+  have hdiff : ∀ t : ℝ, DifferentiableAt ℝ (fun t ↦ - g t) t := by {
               intro t
+              unfold g
               simp only [differentiableAt_neg_iff]
               apply DifferentiableOn.differentiableAt
               apply intervalIntegral.differentiableOn_integral_of_continuous
@@ -119,6 +113,7 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z)
                   }
                   And.intro h_int1 h_int2
                }
+
   have deriv₀ : ∀ t : ℝ, deriv ψ t = 0 := by {
     intro t
     calc
@@ -288,6 +283,7 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z)
   }
 
   simp_rw[ψ] at coincide_ψ
+
   have hψ₀ : ψ 0 = γ.toFun 0 - z := by {
     have hg_0 : g 0 = 0 := by exact intervalIntegral.integral_same
     have hg__0 : -g 0 = 0 := by simp[hg_0]

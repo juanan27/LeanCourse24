@@ -94,11 +94,13 @@ lemma division_differentiable_ball {f : ℂ → ℂ} {g : ℂ → ℂ} (hf : ∀
  }
 
 lemma inverse_differentiable_ball {g : ℂ → ℂ}
-(h : ∀ z_1 ∈ closedBall 0 1, DifferentiableAt ℂ g z_1) (h_v : ∀ s ∈ closedBall 0 1, g s ≠ 0) : ∀ s ∈ closedBall 0 1, DifferentiableAt ℂ (fun s ↦ 1 / g s) s  := by {
+(h : ∀ z_1 ∈ closedBall 0 1, DifferentiableAt ℂ g z_1) (h_v : ∀ s ∈ closedBall 0 1, g s ≠ 0) :
+ ∀ s ∈ closedBall 0 1, DifferentiableAt ℂ (fun s ↦ 1 / g s) s  := by {
   let f : ℂ → ℂ := fun z ↦ 1
   intro s hs
   have hf : ∀ s ∈ closedBall 0 1, DifferentiableAt  ℂ f s := by exact fun s a ↦ differentiableAt_const 1
-  have hquot : ∀ s ∈ closedBall 0 1, DifferentiableAt ℂ  (fun s ↦ f s / g s) s := by exact fun s a ↦ DifferentiableAt.div (hf s a) (h s a) (h_v s a)
+  have hquot : ∀ s ∈ closedBall 0 1, DifferentiableAt ℂ  (fun s ↦ f s / g s) s :=
+  by exact fun s a ↦ DifferentiableAt.div (hf s a) (h s a) (h_v s a)
   exact hquot s hs
   }
 
