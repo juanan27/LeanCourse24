@@ -48,7 +48,8 @@ have h2 : ω z (closed_curve_reverse γ) = -n := by {
       }
       exact DifferentiableAt.sub h7 h6
     }
-    have h6 : deriv (γ ∘ fun (t : ℝ) ↦ ((1 - t) : ℝ)) t = deriv γ ((fun (t : ℝ) => 1 - t) t) * deriv (fun (t : ℝ) => ((1 - t) : ℝ)) t := by {
+    have h6 : deriv (γ ∘ fun (t : ℝ) ↦ ((1 - t) : ℝ)) t =
+    deriv γ ((fun (t : ℝ) => 1 - t) t) * deriv (fun (t : ℝ) => ((1 - t) : ℝ)) t := by {
       have h9 : NormedSpace ℝ ℝ := by infer_instance
       --exact deriv.comp h4 h5
       sorry
@@ -75,7 +76,8 @@ have h2 : ω z (closed_curve_reverse γ) = -n := by {
     rw [h₃]
   }
   have hs : MeasurableSet I := by exact measurableSet_Icc
-  have haux : EqOn (fun t => deriv (fun t ↦ γ.toFun (1 - t)) t / (γ.toFun (1 - t) - z)) (fun t => - deriv γ (1 - t) / (γ (1 - t) - z)) I := by {
+  have haux :
+  EqOn (fun t => deriv (fun t ↦ γ.toFun (1 - t)) t / (γ.toFun (1 - t) - z)) (fun t => - deriv γ (1 - t) / (γ (1 - t) - z)) I := by {
     intros x hx
     simp
     rw [heq]
@@ -97,7 +99,8 @@ have h2 : ω z (closed_curve_reverse γ) = -n := by {
       sorry
   }
   rw [hint]
-  have hint1 : ∫ (x : ℝ) in (1)..(0), deriv γ x / (γ x - z) = - ∫ (x : ℝ) in (0)..(1), deriv γ x / (γ x - z) := by {
+  have hint1 : ∫ (x : ℝ) in (1)..(0), deriv γ x / (γ x - z) =
+  - ∫ (x : ℝ) in (0)..(1), deriv γ x / (γ x - z) := by {
     exact intervalIntegral.integral_symm 0 1
   }
   rw [hint1]
