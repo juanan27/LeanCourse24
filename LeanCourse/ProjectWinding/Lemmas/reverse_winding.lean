@@ -53,5 +53,5 @@ have h2 : ω z (closed_curve_reverse γ) = -n := by {
   sorry
 }
 rw [h2]
-ring
+sorry
 }
