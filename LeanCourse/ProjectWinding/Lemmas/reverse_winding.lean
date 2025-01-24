@@ -14,6 +14,10 @@ noncomputable section
 
 open Classical
 
+instance : NormedField ℝ := by exact normedField
+instance : NormedSpace ℝ ℂ := by exact NormedSpace.complexToReal
+instance : NormedAlgebra ℝ ℝ := by exact RCLike.toNormedAlgebra
+
 lemma ω_reverse (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z) : ω z γ = - ω z (closed_curve_reverse γ) := by {
 have h1 : ∃ n : ℤ, ω z γ = n := by {
   exact ω_integer γ z h
@@ -31,11 +35,13 @@ have h2 : ω z (closed_curve_reverse γ) = -n := by {
     ext1 x
     simp
   }
-  have h₃ : ∀ t : ℝ,  deriv (fun (t : ℝ) => γ (1 - t)) t = - (deriv γ) (1 - t) := by {
+  have h₃ : ∀ t : ℝ, deriv (fun (t : ℝ) => γ (1 - t)) t = - (deriv γ) (1 - t) := by {
     intro t
     rw [h₂]
-    have h4 : DifferentiableAt ℝ γ ((fun (t : ℝ) => ((1 - t) : ℝ)) t) := by {
-      simp
+    let g : ℝ → ℝ := fun t => 1 - t
+    let f : ℝ → ℂ := γ.toFun
+    have h4 : DifferentiableAt ℝ f (1 - t) := by {
+      --simp
       have h5 : Differentiable ℝ γ := by exact closed_curve.Diff γ
       exact h5.differentiableAt
     }
@@ -48,11 +54,10 @@ have h2 : ω z (closed_curve_reverse γ) = -n := by {
       }
       exact DifferentiableAt.sub h7 h6
     }
-    have h6 : deriv (γ ∘ fun (t : ℝ) ↦ ((1 - t) : ℝ)) t =
-    deriv γ ((fun (t : ℝ) => 1 - t) t) * deriv (fun (t : ℝ) => ((1 - t) : ℝ)) t := by {
-      have h9 : NormedAlgebra ℝ ℝ := by infer_instance
-      have h10 : NontriviallyNormedField ℝ := by infer_instance
-      have h11 : NormedSpace ℝ ℝ := by infer_instance
+    have h6 : deriv (f ∘ g) t =
+    deriv f (g t) * deriv g t := by {
+      haveI : NormedSpace ℝ ℂ := by exact instNormedSpaceRealComplex_leanCourse
+      haveI : NormedAlgebra ℝ ℂ := by exact RCLike.toNormedAlgebra
       sorry
     }
     rw [h6]
@@ -116,9 +121,8 @@ have h2 : ω z (closed_curve_reverse γ) = -n := by {
         rw [hI]
         have hI1 : ∫ (t : ℝ) in Set.Icc 0 1, deriv γ.toFun (1 - t) / (γ.toFun (1 - t) - z) =
         ∫ (t : ℝ) in Set.Ioc 0 1, deriv γ.toFun (1 - t) / (γ.toFun (1 - t) - z) := by{
-          apply MeasureTheory.integral_Icc_eq_integral_Ioc        }
-        rw [hI1]
-        rw [intervalIntegral.integral_of_le]
+          apply MeasureTheory.integral_Icc_eq_integral_Ioc}
+        rw [hI1, intervalIntegral.integral_of_le]
         exact zero_le_one' ℝ
       }
       rw [hintaux]
@@ -134,8 +138,7 @@ have h2 : ω z (closed_curve_reverse γ) = -n := by {
         unfold f
         rfl
       }
-      rw [hF1]
-      rw [intervalIntegral.integral_comp_sub_left f 1]
+      rw [hF1, intervalIntegral.integral_comp_sub_left f 1]
       simp
   }
   rw [hint]
@@ -151,8 +154,7 @@ have h2 : ω z (closed_curve_reverse γ) = -n := by {
         have hI1 : ∫ (x : ℝ) in Set.Icc 0 1, deriv γ.toFun x / (γ.toFun x - z) =
         ∫ (x : ℝ) in Set.Ioc 0 1, deriv γ.toFun x / (γ.toFun x - z) := by{
           apply MeasureTheory.integral_Icc_eq_integral_Ioc}
-        rw [hI1]
-        rw [intervalIntegral.integral_of_le]
+        rw [hI1, intervalIntegral.integral_of_le]
         exact zero_le_one' ℝ
       }
     rw [hintaux]
