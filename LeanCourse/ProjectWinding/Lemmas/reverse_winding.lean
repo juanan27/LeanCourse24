@@ -50,21 +50,32 @@ have h2 : ω z (closed_curve_reverse γ) = -n := by {
     }
     have h6 : deriv (γ ∘ fun (t : ℝ) ↦ ((1 - t) : ℝ)) t =
     deriv γ ((fun (t : ℝ) => 1 - t) t) * deriv (fun (t : ℝ) => ((1 - t) : ℝ)) t := by {
-      have h9 : NormedSpace ℝ ℝ := by infer_instance
-      --exact deriv.comp h4 h5
+      have h9 : NormedAlgebra ℝ ℝ := by infer_instance
+      have h10 : NontriviallyNormedField ℝ := by infer_instance
+      have h11 : NormedSpace ℝ ℝ := by infer_instance
       sorry
     }
     rw [h6]
     have h7 : deriv (fun (t : ℝ) => ((1 - t) : ℝ)) t = -1 := by {
       let f : ℝ → ℝ := fun t => 1
       have h8 : deriv f t = 0 := by {
-        sorry
+        unfold f
+        simp
       }
       have h9 : deriv (λ (t : ℝ) => t) t = 1 := by {
-        sorry
+        exact deriv_id t
       }
-      --exact deriv_sub h8 h9
-      sorry
+      have h10 : DifferentiableAt ℝ (fun t => (1 : ℝ)) t := by {
+        exact differentiableAt_const 1
+      }
+      have h11 : DifferentiableAt ℝ (λ t => t) t := by {
+        exact differentiableAt_id
+      }
+      have h12 : deriv (fun y ↦ 1 - y) t = deriv (fun t ↦ 1) t - deriv (fun t ↦ t) t := by {
+        exact deriv_sub h10 h11
+      }
+      rw [h12, h8, h9]
+      simp
     }
     rw [h7]
     simp
@@ -94,17 +105,59 @@ have h2 : ω z (closed_curve_reverse γ) = -n := by {
   }
   simp only [haux1]
   rw [neg]
-  have hint : ∫ (t : ℝ) in I, deriv γ.toFun (1 - t) / (γ.toFun (1 - t) - z) =
-    ∫ (x : ℝ) in (1)..(0), deriv γ x / (γ x - z) := by {
-      sorry
+  have hint : ∫ (x : ℝ) in I, deriv γ (1 - x) / (γ (1 - x) - z) =
+    ∫ (x : ℝ) in (0)..1, deriv γ x / (γ x - z) := by {
+      have hintaux : ∫ (t : ℝ) in I, deriv γ (1 - t) / (γ (1 - t) - z) =
+      ∫ (t : ℝ) in (0)..(1), deriv γ (1 - t) / (γ (1 - t) - z) := by {
+        have hI : I = Set.Icc 0 1 := by {
+          ext x
+          simp
+        }
+        rw [hI]
+        have hI1 : ∫ (t : ℝ) in Set.Icc 0 1, deriv γ.toFun (1 - t) / (γ.toFun (1 - t) - z) =
+        ∫ (t : ℝ) in Set.Ioc 0 1, deriv γ.toFun (1 - t) / (γ.toFun (1 - t) - z) := by{
+          apply MeasureTheory.integral_Icc_eq_integral_Ioc        }
+        rw [hI1]
+        rw [intervalIntegral.integral_of_le]
+        exact zero_le_one' ℝ
+      }
+      rw [hintaux]
+      let f := fun t => deriv γ t / (γ t - z)
+      have hF : ∫ (t : ℝ) in (0)..1, deriv γ.toFun (1 - t) / (γ.toFun (1 - t) - z) =
+      ∫ (t : ℝ) in (0)..1, f (1 - t) := by {
+        unfold f
+        rfl
+      }
+      rw [hF]
+      have hF1 : ∫ (t : ℝ) in (0)..1, deriv γ.toFun t / (γ.toFun t - z) =
+      ∫ (t : ℝ) in (0)..1, f t := by {
+        unfold f
+        rfl
+      }
+      rw [hF1]
+      rw [intervalIntegral.integral_comp_sub_left f 1]
+      simp
   }
   rw [hint]
-  have hint1 : ∫ (x : ℝ) in (1)..(0), deriv γ x / (γ x - z) =
-  - ∫ (x : ℝ) in (0)..(1), deriv γ x / (γ x - z) := by {
-    exact intervalIntegral.integral_symm 0 1
+  have hω : (1 / (2 * ↑π * Complex.I) * ∫ (x : ℝ) in (0)..1, deriv γ.toFun x / (γ.toFun x - z)) = ω z γ := by {
+    unfold ω
+    have hintaux : ∫ (x : ℝ) in I, deriv γ x / (γ x - z) =
+      ∫ x in (0)..(1), deriv γ x / (γ x - z) := by {
+        have hI : I = Set.Icc 0 1 := by {
+          ext x
+          simp
+        }
+        rw [hI]
+        have hI1 : ∫ (x : ℝ) in Set.Icc 0 1, deriv γ.toFun x / (γ.toFun x - z) =
+        ∫ (x : ℝ) in Set.Ioc 0 1, deriv γ.toFun x / (γ.toFun x - z) := by{
+          apply MeasureTheory.integral_Icc_eq_integral_Ioc}
+        rw [hI1]
+        rw [intervalIntegral.integral_of_le]
+        exact zero_le_one' ℝ
+      }
+    rw [hintaux]
   }
-  rw [hint1]
-  sorry
+  rw [hω, hn]
 }
 rw [h2]
 ring
