@@ -45,7 +45,7 @@ have h2 : ω z (closed_curve_reverse γ) = -n := by {
       have h5 : Differentiable ℝ γ := by exact closed_curve.Diff γ
       exact h5.differentiableAt
     }
-    have h5 : DifferentiableAt ℝ (λ (t : ℝ) => ((1 - t) : ℝ)) t := by {
+    have h5 : DifferentiableAt ℝ g t := by {
       have h6 : DifferentiableAt ℝ id t := by {
         exact differentiableAt_id
       }
@@ -56,8 +56,8 @@ have h2 : ω z (closed_curve_reverse γ) = -n := by {
     }
     have h6 : deriv (f ∘ g) t =
     deriv f (g t) * deriv g t := by {
-      haveI : NormedSpace ℝ ℂ := by exact instNormedSpaceRealComplex_leanCourse
-      haveI : NormedAlgebra ℝ ℂ := by exact RCLike.toNormedAlgebra
+      haveI inst : NormedSpace ℝ ℂ := by exact instNormedSpaceRealComplex_leanCourse
+      haveI inst1 : NormedAlgebra ℝ ℂ := by exact RCLike.toNormedAlgebra
       sorry
     }
     rw [h6]
