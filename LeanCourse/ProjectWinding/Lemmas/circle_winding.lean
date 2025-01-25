@@ -27,7 +27,7 @@ import Mathlib.Algebra.GroupWithZero.Basic
 import Mathlib.MeasureTheory.Measure.MeasureSpaceDef
 import Mathlib.MeasureTheory.Function.L1Space
 import LeanCourse.ProjectWinding.Definitions.curves
-import LeanCourse.ProjectWinding.Theorems.division_continuous_and_diff
+import LeanCourse.ProjectWinding.Lemmas.division_continuous_and_diff
 
 open DifferentiableOn Finset
 open BigOperators Function Set Real Topology Filter
@@ -353,7 +353,7 @@ lemma winding_circle_inside (γ : closed_curve) (h_circle : ∀ t ∈ I, γ t = 
     rw[haux]
     have haux2 : (∮ (z_1 : ℂ) in C(0, 1), (z_1 - z)⁻¹) = (∮ (z_1 : ℂ) in C(0, 1), (z_1 - z)⁻¹ • const z_1) := by norm_num
     rw[haux2]
-    apply DiffContOnCl.circleIntegral_sub_inv_smul (c := 0) (R := 1) (f := const) (w := z) -- can also use circleIntegral.integral_sub_inv_of_mem_ball
+    apply DiffContOnCl.circleIntegral_sub_inv_smul (c := 0) (R := 1) (f := const) (w := z) -- Cauchy's Integral Formula (can also use circleIntegral.integral_sub_inv_of_mem_ball)
     · exact diffContOnCl_const
     · exact mem_ball_zero_iff.mpr h
   }
