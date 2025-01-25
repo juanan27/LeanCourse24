@@ -18,6 +18,23 @@ instance : NormedField ℝ := by exact normedField
 instance : NormedSpace ℝ ℂ := by exact NormedSpace.complexToReal
 instance : NormedAlgebra ℝ ℝ := by exact RCLike.toNormedAlgebra
 
+#check deriv.comp
+
+
+-- The following lemma is useful:
+
+lemma reverse_aux (γ : closed_curve) (t:ℝ) : deriv (γ.toFun ∘ fun t ↦ 1 - t) t = -deriv γ.toFun (1 - t) := by {
+  let g : ℝ → ℂ := fun x ↦ γ (1-x)
+  have heq : (γ.toFun ∘ (fun t ↦ 1 - t)) = g := by {
+    ext a
+    simp
+  }
+  simp_rw[heq]
+  exact deriv_comp_const_sub γ.toFun 1 t
+}
+
+-- We can prove an important result:
+
 lemma ω_reverse (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z) : ω z γ = - ω z (closed_curve_reverse γ) := by {
 have h1 : ∃ n : ℤ, ω z γ = n := by {
   exact ω_integer γ z h
@@ -54,36 +71,7 @@ have h2 : ω z (closed_curve_reverse γ) = -n := by {
       }
       exact DifferentiableAt.sub h7 h6
     }
-    have h6 : deriv (f ∘ g) t =
-    deriv f (g t) * deriv g t := by {
-      haveI inst : NormedSpace ℝ ℂ := by exact instNormedSpaceRealComplex_leanCourse
-      haveI inst1 : NormedAlgebra ℝ ℂ := by exact RCLike.toNormedAlgebra
-      sorry
-    }
-    rw [h6]
-    have h7 : deriv (fun (t : ℝ) => ((1 - t) : ℝ)) t = -1 := by {
-      let f : ℝ → ℝ := fun t => 1
-      have h8 : deriv f t = 0 := by {
-        unfold f
-        simp
-      }
-      have h9 : deriv (λ (t : ℝ) => t) t = 1 := by {
-        exact deriv_id t
-      }
-      have h10 : DifferentiableAt ℝ (fun t => (1 : ℝ)) t := by {
-        exact differentiableAt_const 1
-      }
-      have h11 : DifferentiableAt ℝ (λ t => t) t := by {
-        exact differentiableAt_id
-      }
-      have h12 : deriv (fun y ↦ 1 - y) t = deriv (fun t ↦ 1) t - deriv (fun t ↦ t) t := by {
-        exact deriv_sub h10 h11
-      }
-      rw [h12, h8, h9]
-      simp
-    }
-    rw [h7]
-    simp
+    exact reverse_aux γ t
   }
   simp only [h₃]
   have heq : ∀ t : ℝ, deriv (fun t ↦ γ.toFun (1 - t)) t / (γ.toFun (1 - t) - z) =
