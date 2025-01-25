@@ -33,9 +33,16 @@ lemma reverse_aux (γ : closed_curve) (t:ℝ) : deriv (γ.toFun ∘ fun t ↦ 1 
   exact deriv_comp_const_sub γ.toFun 1 t
 }
 
--- We can prove an important result:
+/- The following theorem allows us to see the "topological side" that the notion of winding number
+carries. Every time we work with curves we are, even though we do it implicitly, fixing an orientation or,
+in other words, we are working within a fixed basis. In this sense, travelling the curve "clockwise"
+or the other way around leads to the same curve, but if we draw it, we would do it the from the "end"
+to the "beginning" now. This way, changing the way we travel through the curve can also be seen
+as a change of basis which, as we know (basic manifolds theory) might lead to a change of orientation.
+Therefore, this theorem, yet simple, illustrates the underlying topological notion of orientation
+that the curves - and thus the winding number - carry. -/
 
-lemma ω_reverse (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z) : ω z γ = - ω z (closed_curve_reverse γ) := by {
+theorem ω_reverse (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z) : ω z γ = - ω z (closed_curve_reverse γ) := by {
 have h1 : ∃ n : ℤ, ω z γ = n := by {
   exact ω_integer γ z h
 }

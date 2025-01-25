@@ -78,7 +78,11 @@ lemma integral_le_long {a z₀ : ℂ} (γ : closed_curve) :
     }
   }
 
--- The index function is continuous
+/- The next theorem claims that the index function, the so-called winding number but with non-fixed z, this is:
+    fun z => 1/(2*π*i) * ∫ t in I, (deriv γ' t) / (γ t - z)
+    is continuous on the two connected components of ℂ \ (γ '' I), which we have labelled as
+    interior and exterior of γ.
+  -/
 
 theorem ω_continuous (γ : closed_curve) (z : ℂ) (h : z ∉ γ '' I)
 : ContinuousOn (fun z => 1/(2*Real.pi*Complex.I) *  ∫ t in I, (deriv γ t) / (γ t - z)) ((univ \ (image γ I)) : Set ℂ )  := by {

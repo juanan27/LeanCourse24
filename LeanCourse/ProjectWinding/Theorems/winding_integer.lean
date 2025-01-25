@@ -29,6 +29,8 @@ noncomputable section
 
 open Classical
 
+/- This lemma has already been implemented in Mathlib, but we state it just to take the implication we need. -/
+
 lemma exp_one (z : ℂ) (h_1 : Complex.exp z = 1) : ∃ k : ℤ, z = 2 * Real.pi * k * Complex.I := by {
   have h : Complex.exp z = 1 → ∃ n : ℤ , z = n * (2 * ↑π * Complex.I) := by exact Complex.exp_eq_one_iff.1
   have h' : ∃ n : ℤ , z = ↑n * (2 * ↑π * Complex.I) := h h_1
@@ -38,10 +40,17 @@ lemma exp_one (z : ℂ) (h_1 : Complex.exp z = 1) : ∃ k : ℤ, z = 2 * Real.pi
   ring
   }
 
--- We are ready to show ω is an integer
+/- The next theorem ensures the property of the winding number being an integer. This is quite obvious
+if we do it by hand in a piece of paper but, as (almost) always, LEAN needs ~ a bit of help ~ to learn this!
+And no, curves are not look-alikes of Buzz Lightyear - this is, they do not tend to go to the
+infinity and beyond - so please, think of "reasonable" curves. They need to rest, so at some point
+they will stop winding around! -/
 
 theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z)
 : ∃ n : ℤ, ω z γ = n := by {
+
+-- Some maps declarations and properties we'll use throughout the proof:
+
   unfold ω
   have hz : Continuous $ fun s : ℝ  ↦ z := by exact continuous_const
   have hγ : Continuous $ fun s : ℝ ↦ γ s := by exact closed_curve.Cont γ
@@ -77,6 +86,7 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z)
   exact h_cont
   }
 
+-- "g" and "ψ" are going to be crucial for the proof!
 
   let ψ : ℝ → ℂ := fun t ↦ Complex.exp (- ∫ s in (0)..t, deriv γ s / (γ s - z)) * (γ t - z)
 
@@ -113,7 +123,7 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z)
                   }
                   And.intro h_int1 h_int2
                }
-
+-- First step: prove that ψ' t = 0 for all t in ℝ. Goal: prove ψ is constant. Namely, ψ 0 = ψ 1.
   have deriv₀ : ∀ t : ℝ, deriv ψ t = 0 := by {
     intro t
     calc
@@ -234,6 +244,7 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z)
         }
     _ = 0 := by ring
     }
+  -- Phew! That was a lot of work! But we are not done yet... let's prove that ψ is constant!
   have coincide_ψ : ψ 0 = ψ 1 := by {
     have h_cont : ContinuousOn (fun t ↦ deriv γ.toFun t / (γ.toFun t - z)) I := by {
       apply Continuous.continuousOn
@@ -284,6 +295,8 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z)
 
   simp_rw[ψ] at coincide_ψ
 
+-- Note that ψ 0 = ψ 1 → γ 0 - z = Complex.exp (-g 1) * (γ 0 - z). Here we cancel out γ 0 - z and get
+-- that 1 = Complex.exp (-g 1).
   have hψ₀ : ψ 0 = γ.toFun 0 - z := by {
     have hg_0 : g 0 = 0 := by exact intervalIntegral.integral_same
     have hg__0 : -g 0 = 0 := by simp[hg_0]
@@ -330,6 +343,7 @@ theorem ω_integer (γ : closed_curve) (z : ℂ) (h : ∀ t : ℝ , γ t ≠ z)
     use m
     simp[h_eq, hm]
     }
+  -- We're almost there
   have not_zero : (2 * ↑π * Complex.I) ≠ 0 := by {
     simp
     exact pi_ne_zero
