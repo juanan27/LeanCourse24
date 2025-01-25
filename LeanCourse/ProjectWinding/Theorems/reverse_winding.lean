@@ -58,7 +58,6 @@ have h2 : ω z (closed_curve_reverse γ) = -n := by {
     let g : ℝ → ℝ := fun t => 1 - t
     let f : ℝ → ℂ := γ.toFun
     have h4 : DifferentiableAt ℝ f (1 - t) := by {
-      --simp
       have h5 : Differentiable ℝ γ := by exact closed_curve.Diff γ
       exact h5.differentiableAt
     }
