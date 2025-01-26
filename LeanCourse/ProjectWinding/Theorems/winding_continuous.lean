@@ -13,7 +13,21 @@ noncomputable section
 
 open Classical
 
-lemma integral_le_long {a z₀ : ℂ} (γ : closed_curve) :
+lemma hintaux (f : ℝ → ℂ) : 1 / (2 * ↑π * Complex.I) * ∫ (t : ℝ) in I, f t =
+      1 / (2 * ↑π * Complex.I) * ∫ (t : ℝ) in (0)..1, f t := by {
+        have hI : I = Set.Icc 0 1 := by {
+          ext x
+          simp
+        }
+        rw [hI]
+        have hI1 : ∫ (t : ℝ) in Icc 0 1, f t =
+        ∫ (t : ℝ) in Ioc 0 1, f t:= by{
+          apply MeasureTheory.integral_Icc_eq_integral_Ioc}
+        rw [hI1, intervalIntegral.integral_of_le]
+        exact zero_le_one' ℝ
+      }
+
+lemma integral_le_const {a z₀ : ℂ} (γ : closed_curve) (h₁ : ∀ t : ℝ, γ.toFun t - a ≠ 0) (h₂ : ∀ t : ℝ, γ.toFun t - z₀ ≠ 0) :
  ∃ C, ‖∫ (t : ℝ) in I, deriv γ.toFun t * (a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ ≤ ∫ t in I, C * ‖(a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ := by {
   have hbound : ∃ C, ∀ t ∈ I, ‖deriv γ t‖ ≤ C := by {
     have hγ : ContinuousOn (deriv γ.toFun) I := by
@@ -57,13 +71,13 @@ lemma integral_le_long {a z₀ : ℂ} (γ : closed_curve) :
   }
   have heq1 : ∫ (t : ℝ) in I, ‖deriv γ.toFun t * (a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ =
   ∫ (t : ℝ) in I, ‖deriv γ.toFun t‖ * ‖(a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ := by {
-    have haux : ∀ t : ℝ, ‖deriv γ.toFun t * (a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ =
-    ‖deriv γ.toFun t‖ * ‖(a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ := by {
-      intro t
+    have haux : (fun t => ‖deriv γ.toFun t * (a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖) =
+    (fun t => ‖deriv γ.toFun t‖ * ‖(a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖) := by {
+      ext1 t
       simp only [norm_mul, norm_div, norm_eq_abs]
       ring
     }
-    sorry
+    rw [haux]
   }
   calc
     ‖∫ (t : ℝ) in I, deriv γ.toFun t * (a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ ≤
@@ -73,8 +87,93 @@ lemma integral_le_long {a z₀ : ℂ} (γ : closed_curve) :
     _ = ∫ (t : ℝ) in I, ‖deriv γ.toFun t‖ * ‖(a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ := by {
       exact heq1
     }
-    _ ≤ ∫ t in I, C * ‖(a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ := by {
-      sorry
+    _ ≤ ∫ (t : ℝ) in I, C * ‖(a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ := by {
+      have haux : (fun (t : I) => ‖deriv γ.toFun t‖ * ‖(a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖) ≤
+      (fun (t : I) => C * ‖(a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖) := by {
+        intro t
+        apply mul_le_mul_of_nonneg_right
+        · exact hC t t.2
+        · exact norm_nonneg ((a - z₀) / ((γ.toFun ↑t - a) * (γ.toFun ↑t - z₀)))
+      }
+      have hintaux2 : ∫ (t : ℝ) in I, ‖deriv γ.toFun t‖ * ‖(a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ =
+      ∫ (t : ℝ) in (0)..1, ‖deriv γ.toFun t‖ * ‖(a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ := by {
+        have hI : I = Set.Icc 0 1 := by {
+          ext x
+          simp
+        }
+        rw [hI]
+        have hI1 : ∫ (t : ℝ) in Set.Icc 0 1, ‖deriv γ.toFun t‖ * ‖(a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ =
+        ∫ (t : ℝ) in Set.Ioc 0 1, ‖deriv γ.toFun t‖ * ‖(a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ := by{
+          apply MeasureTheory.integral_Icc_eq_integral_Ioc}
+        rw [hI1, intervalIntegral.integral_of_le]
+        exact zero_le_one' ℝ
+      }
+
+      have hintaux3 : ∫ (t : ℝ) in I, C * ‖(a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ =
+      ∫ (t : ℝ) in (0)..1, C * ‖(a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ := by {
+        have hI : I = Set.Icc 0 1 := by {
+          ext x
+          simp
+        }
+        rw [hI]
+        have hI1 : ∫ (t : ℝ) in Set.Icc 0 1, C * ‖(a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ =
+        ∫ (t : ℝ) in Set.Ioc 0 1, C * ‖(a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ := by{
+          apply MeasureTheory.integral_Icc_eq_integral_Ioc}
+        rw [hI1, intervalIntegral.integral_of_le]
+        exact zero_le_one' ℝ
+      }
+      rw [hintaux2, hintaux3]
+      apply intervalIntegral.integral_mono
+      · exact zero_le_one' ℝ
+      · apply Continuous.intervalIntegrable
+        have auxi : (fun u ↦ ‖deriv γ.toFun u‖ * ‖(a - z₀) / ((γ.toFun u - a) * (γ.toFun u - z₀))‖) =
+        (fun u ↦ ‖deriv γ.toFun u * (a - z₀) / ((γ.toFun u - a) * (γ.toFun u - z₀))‖) := by {
+          ext1 u
+          rw [← norm_mul]
+          ring_nf
+        }
+        rw [auxi]
+        apply Continuous.norm
+        apply Continuous.mul
+        · apply Continuous.mul
+          · exact closed_curve.Cont_deriv γ
+          · exact continuous_const
+        · have eq : (fun t => ((γ.toFun t - a) * (γ.toFun t - z₀))⁻¹) =
+          (fun t => 1/((γ.toFun t - a) * (γ.toFun t - z₀))) := by {
+            ext1 t
+            rw [inv_eq_one_div]
+          }
+          rw [eq]
+          apply Continuous.div₀
+          · exact continuous_const
+          · apply Continuous.mul
+            · have h1aux : Continuous γ := by exact closed_curve.Cont γ
+              have h2aux : Continuous (fun (_ : ℝ) => a) := by exact continuous_const
+              exact Continuous.sub h1aux h2aux
+            · have h1aux : Continuous γ := by exact closed_curve.Cont γ
+              have h2aux : Continuous (fun (_ : ℝ) => z₀) := by exact continuous_const
+              exact Continuous.sub h1aux h2aux
+          · intro x
+            rw [mul_ne_zero_iff]
+            exact ⟨h₁ x, h₂ x⟩
+
+      · apply Continuous.intervalIntegrable
+        apply Continuous.mul
+        · exact continuous_const
+        · apply Continuous.norm
+          apply Continuous.div₀
+          · exact continuous_const
+          · apply Continuous.mul
+            · have h1aux : Continuous γ := by exact closed_curve.Cont γ
+              have h2aux : Continuous (fun (_ : ℝ) => a) := by exact continuous_const
+              exact Continuous.sub h1aux h2aux
+            · have h1aux : Continuous γ := by exact closed_curve.Cont γ
+              have h2aux : Continuous (fun (_ : ℝ) => z₀) := by exact continuous_const
+              exact Continuous.sub h1aux h2aux
+          · intro x
+            rw [mul_ne_zero_iff]
+            exact ⟨h₁ x, h₂ x⟩
+      · sorry -- don't know how to prove this :(
     }
   }
 
@@ -84,7 +183,7 @@ lemma integral_le_long {a z₀ : ℂ} (γ : closed_curve) :
     interior and exterior of γ.
   -/
 
-theorem ω_continuous (γ : closed_curve) (z : ℂ) (h : z ∉ γ '' I)
+theorem ω_continuous (γ : closed_curve)
 : ContinuousOn (fun z => 1/(2*Real.pi*Complex.I) *  ∫ t in I, (deriv γ t) / (γ t - z)) ((univ \ (image γ I)) : Set ℂ )  := by {
   rw [Metric.continuousOn_iff]
   intro z₀ hz₀ ε hε
@@ -92,22 +191,33 @@ theorem ω_continuous (γ : closed_curve) (z : ℂ) (h : z ∉ γ '' I)
   intro a ha haz₀
   let d := ⨅ (a : ℂ) (_ : a ∈ γ '' I), dist z₀ a
   have hd : d > 0 := by {
+    have hz0 : z₀ ∉ γ '' I := by {
+      exact not_mem_of_mem_diff hz₀
+    }
+    have hI : IsCompact (γ '' I) := by {
+      exact IsCompact.image (by exact isCompact_Icc) (by exact closed_curve.Cont γ)
+    }
     sorry
   }
   let ε' := min (d/2) (ε/2)
   have hd1 : ∀ w ∈ γ '' I, d ≤ ‖z₀ - w‖ := by {
     intro w hw
+    unfold d
+    rw [← NormedField.dist_eq]
     sorry
   }
-  have hz₀w : ∀ w ∈ γ '' I, ‖z₀ - w‖ ≤ ‖z₀ - z‖ + ‖z - w‖ := by {
+  have hz₀w : ∀ z ∈ Metric.ball z₀ ε', ∀ w ∈ γ '' I, ‖z₀ - w‖ ≤ ‖z₀ - z‖ + ‖z - w‖ := by {
+    intro z hz
     exact fun w a ↦ norm_sub_le_norm_sub_add_norm_sub z₀ z w
   }
-  have hzwl : ‖z₀ - z‖ < d/2 := by {
+  have hzwl : ∀ z ∈ Metric.ball z₀ ε', ‖z₀ - z‖ < d/2 := by {
+    intro z hz
     sorry
   }
-  have hzwl' : ∀ w ∈ γ '' I, d < d/2 + ‖z - w‖ := by {
+  have hzwl' : ∀ z ∈ Metric.ball z₀ ε, ∀ w ∈ γ '' I, d < d/2 + ‖z - w‖ := by {
     sorry
   }
+
   have eq : dist (1 / (2 * ↑π * Complex.I) * ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - a))
     (1 / (2 * ↑π * Complex.I) * ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - z₀)) =
     ‖1 / (2 * ↑π * Complex.I) * ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - a)-
@@ -121,12 +231,26 @@ theorem ω_continuous (γ : closed_curve) (z : ℂ) (h : z ∉ γ '' I)
     }
   rw [eq]
   have diff : ‖1 / (2 * ↑π * Complex.I) * ∫ (t : ℝ) in I,deriv γ.toFun t / (γ.toFun t - a) -
-          1 / (2 * ↑π * Complex.I) * ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - z₀)‖ =
-          ‖1 / (2 * ↑π * Complex.I) *
-           ∫ (t : ℝ) in I,
-          (deriv γ.toFun t / (γ.toFun t - a) -
-           deriv γ.toFun t / (γ.toFun t - z₀))‖ := by {
-            sorry
+            1 / (2 * ↑π * Complex.I) * ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - z₀)‖ =
+            ‖1 / (2 * ↑π * Complex.I) * ∫ (t : ℝ) in I, (deriv γ.toFun t / (γ.toFun t - a) - deriv γ.toFun t / (γ.toFun t - z₀))‖ := by {
+            have aux : 1 / (2 * ↑π * Complex.I) * ∫ (t : ℝ) in I,deriv γ.toFun t / (γ.toFun t - a) -
+            1 / (2 * ↑π * Complex.I) * ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - z₀) =
+            1 / (2 * ↑π * Complex.I) * (∫ (t : ℝ) in I,(deriv γ.toFun t / (γ.toFun t - a) - deriv γ.toFun t / (γ.toFun t - z₀))) := by{
+              calc
+                1 / (2 * ↑π * Complex.I) * ∫ (t : ℝ) in I,deriv γ.toFun t / (γ.toFun t - a) -
+                1 / (2 * ↑π * Complex.I) * ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - z₀) =
+                1 / (2 * ↑π * Complex.I) * (∫ (t : ℝ) in I,deriv γ.toFun t / (γ.toFun t - a) -
+                ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - z₀)) := by {
+                  --congr
+                  sorry
+                  --rw [← mul_sub_left_distrib (1 / (2 * ↑π * Complex.I)) (∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - a)) (∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - z₀))]
+                }
+                _ = 1 / (2 * ↑π * Complex.I) * (∫ (t : ℝ) in I, (deriv γ.toFun t / (γ.toFun t - a) - deriv γ.toFun t / (γ.toFun t - z₀))) := by {
+                  rw [hintaux, hintaux]
+                  sorry
+                }
+            }
+            rw [aux]
             }
   rw [diff]
   have eq1 : ∀ t ∈ I, deriv γ.toFun t / (γ.toFun t - a) - deriv γ.toFun t / (γ.toFun t - z₀) =
@@ -154,5 +278,14 @@ theorem ω_continuous (γ : closed_curve) (z : ℂ) (h : z ∉ γ '' I)
     sorry
   }
   rw [hnorm]
+  have hnorm1 : ∃ C, ‖∫ (t : ℝ) in I, deriv γ.toFun t * (a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ ≤
+  ∫ (t : ℝ) in I, C * ‖(a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ := by {
+    exact integral_le_const γ
+  }
+  obtain ⟨C, hC⟩ := hnorm1
+  have hnorm2 : ∫ (t : ℝ) in I, C * ‖(a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ =
+  C * ∫ (t : ℝ) in I, ‖(a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ := by {
+    exact integral_mul_left C fun a_1 ↦ ‖(a - z₀) / ((γ.toFun a_1 - a) * (γ.toFun a_1 - z₀))‖
+  }
   sorry
 }
