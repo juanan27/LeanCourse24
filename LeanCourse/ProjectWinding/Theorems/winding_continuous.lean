@@ -27,6 +27,7 @@ lemma hintaux (f : ℝ → ℂ) : 1 / (2 * ↑π * Complex.I) * ∫ (t : ℝ) in
         exact zero_le_one' ℝ
       }
 
+
 lemma integral_le_const {a z₀ : ℂ} (γ : closed_curve) (h₁ : ∀ t : ℝ, γ.toFun t - a ≠ 0) (h₂ : ∀ t : ℝ, γ.toFun t - z₀ ≠ 0) :
  ∃ C, ‖∫ (t : ℝ) in I, deriv γ.toFun t * (a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ ≤ ∫ t in I, C * ‖(a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ := by {
   have hbound : ∃ C, ∀ t ∈ I, ‖deriv γ t‖ ≤ C := by {
@@ -123,7 +124,7 @@ lemma integral_le_const {a z₀ : ℂ} (γ : closed_curve) (h₁ : ∀ t : ℝ, 
         exact zero_le_one' ℝ
       }
       rw [hintaux2, hintaux3]
-      apply intervalIntegral.integral_mono
+      apply intervalIntegral.integral_mono_on
       · exact zero_le_one' ℝ
       · apply Continuous.intervalIntegrable
         have auxi : (fun u ↦ ‖deriv γ.toFun u‖ * ‖(a - z₀) / ((γ.toFun u - a) * (γ.toFun u - z₀))‖) =
@@ -173,7 +174,13 @@ lemma integral_le_const {a z₀ : ℂ} (γ : closed_curve) (h₁ : ∀ t : ℝ, 
           · intro x
             rw [mul_ne_zero_iff]
             exact ⟨h₁ x, h₂ x⟩
-      · sorry -- don't know how to prove this :(
+      · intro x hx
+        let b := ‖(a - z₀) / ((γ.toFun x - a) * (γ.toFun x - z₀))‖
+        have hb : ‖(a - z₀) / ((γ.toFun x - a) * (γ.toFun x - z₀))‖ = b := rfl
+        rw [hb]
+        have hbb : b ≥ 0 := by exact norm_nonneg _
+        have haux := hC x hx
+        exact mul_le_mul_of_nonneg_right haux hbb
     }
   }
 
@@ -280,12 +287,61 @@ theorem ω_continuous (γ : closed_curve)
   rw [hnorm]
   have hnorm1 : ∃ C, ‖∫ (t : ℝ) in I, deriv γ.toFun t * (a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ ≤
   ∫ (t : ℝ) in I, C * ‖(a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ := by {
-    exact integral_le_const γ
+    sorry
   }
   obtain ⟨C, hC⟩ := hnorm1
   have hnorm2 : ∫ (t : ℝ) in I, C * ‖(a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ =
   C * ∫ (t : ℝ) in I, ‖(a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ := by {
     exact integral_mul_left C fun a_1 ↦ ‖(a - z₀) / ((γ.toFun a_1 - a) * (γ.toFun a_1 - z₀))‖
+  }
+  have hn1 :  (fun t => ‖(a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖) =
+  (fun t => ‖(a - z₀)‖ * ‖1/ ((γ.toFun t - a) * (γ.toFun t - z₀))‖) := by {
+    ext1 x
+    rw [← norm_mul]
+    ring_nf
+  }
+  have hnorm3 : C * ∫ (t : ℝ) in I, ‖(a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ =
+  C * ∫ (t : ℝ) in I, ‖(a - z₀)‖ * ‖1/ ((γ.toFun t - a) * (γ.toFun t - z₀))‖ := by {
+    rw [hn1]
+  }
+  have aux0 : ∀ t ∈ I, d ≤ ‖γ t - a‖ := by {
+    sorry
+  }
+  have aux1 : ∀ t ∈ I, d/2 ≤ ‖γ t - z₀‖ := by {
+    sorry
+  }
+  have hnorm4 : ∫ (t : ℝ) in I, ‖(a - z₀)‖ * ‖1/ ((γ.toFun t - a) * (γ.toFun t - z₀))‖ =
+  ‖(a - z₀)‖ * ∫ (t : ℝ) in I, ‖1/ ((γ.toFun t - a) * (γ.toFun t - z₀))‖ := by {
+    exact integral_mul_left ‖(a - z₀)‖ $ fun a_1 ↦ ‖1/ ((γ.toFun a_1 - a) * (γ.toFun a_1 - z₀))‖
+  }
+  rw [hnorm4] at hnorm3
+  have prod : ∀ t ∈ I, d * (d/2) ≤ ‖γ t - a‖ * ‖γ t - z₀‖ := by {
+    intro x hx
+    apply mul_le_mul
+    exact aux0 x hx
+    exact aux1 x hx
+    nlinarith
+    exact norm_nonneg $ γ.toFun x - a
+  }
+  have funless : (fun (t : I) => ‖1 / ((γ.toFun t - a) * (γ.toFun t - z₀))‖) ≤
+  (fun (t : I) => 1 / (d * (d/2))) := by {
+    intro t
+    have haux : (fun (t : I) ↦ ‖1 / ((γ.toFun ↑t - a) * (γ.toFun ↑t - z₀))‖) =
+        (fun (t : I) ↦ 1 / (‖(γ.toFun ↑t - a)‖ * ‖(γ.toFun ↑t - z₀)‖)) := by {
+          simp only [norm_div, norm_mul]; simp
+    }
+    rw [haux]
+    have ha0 : 0 < ‖γ.toFun ↑t - a‖ := by sorry -- all these should be easy to prove
+    have hz₀0 : 0 < ‖γ.toFun ↑t - z₀‖ := by sorry
+    have haz : 0 < ‖γ.toFun ↑t - a‖ * ‖γ.toFun ↑t - z₀‖ := by sorry
+    have hdd2 : 0 < (d * (d/2)) := by sorry
+    rw [div_le_div_iff haz hdd2]
+    simp
+    apply mul_le_mul
+    sorry
+    sorry
+    sorry
+    exact AbsoluteValue.nonneg Complex.abs (γ.toFun ↑t - a)
   }
   sorry
 }
