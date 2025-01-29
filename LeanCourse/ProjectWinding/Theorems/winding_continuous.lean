@@ -27,6 +27,20 @@ lemma hintaux (f : ℝ → ℂ) : 1 / (2 * ↑π * Complex.I) * ∫ (t : ℝ) in
         exact zero_le_one' ℝ
       }
 
+lemma hintaux1 (f : ℝ → ℂ) : ∫ (t : ℝ) in I, f t =
+      ∫ (t : ℝ) in (0)..1, f t := by {
+        have hI : I = Set.Icc 0 1 := by {
+          ext x
+          simp
+        }
+        rw [hI]
+        have hI1 : ∫ (t : ℝ) in Icc 0 1, f t =
+        ∫ (t : ℝ) in Ioc 0 1, f t:= by{
+          apply MeasureTheory.integral_Icc_eq_integral_Ioc}
+        rw [hI1, intervalIntegral.integral_of_le]
+        exact zero_le_one' ℝ
+      }
+
 
 lemma integral_le_const {a z₀ : ℂ} (γ : closed_curve) (h₁ : ∀ t : ℝ, γ.toFun t - a ≠ 0) (h₂ : ∀ t : ℝ, γ.toFun t - z₀ ≠ 0) :
  ∃ C, ‖∫ (t : ℝ) in I, deriv γ.toFun t * (a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ ≤ ∫ t in I, C * ‖(a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ := by {
@@ -126,7 +140,7 @@ lemma integral_le_const {a z₀ : ℂ} (γ : closed_curve) (h₁ : ∀ t : ℝ, 
       rw [hintaux2, hintaux3]
       apply intervalIntegral.integral_mono_on
       · exact zero_le_one' ℝ
-      · apply Continuous.intervalIntegrable
+      · apply Continuous.intervalIntegrable -- cambiar por ContinuousOn!
         have auxi : (fun u ↦ ‖deriv γ.toFun u‖ * ‖(a - z₀) / ((γ.toFun u - a) * (γ.toFun u - z₀))‖) =
         (fun u ↦ ‖deriv γ.toFun u * (a - z₀) / ((γ.toFun u - a) * (γ.toFun u - z₀))‖) := by {
           ext1 u
@@ -191,12 +205,12 @@ lemma integral_le_const {a z₀ : ℂ} (γ : closed_curve) (h₁ : ∀ t : ℝ, 
   -/
 
 theorem ω_continuous (γ : closed_curve)
-: ContinuousOn (fun z => 1/(2*Real.pi*Complex.I) *  ∫ t in I, (deriv γ t) / (γ t - z)) ((univ \ (image γ I)) : Set ℂ )  := by {
+: ContinuousOn (fun z => 1/(2*Real.pi*Complex.I) * ∫ t in I, (deriv γ t) / (γ t - z)) ((univ \ (image γ I)) : Set ℂ ) := by {
   rw [Metric.continuousOn_iff]
   intro z₀ hz₀ ε hε
   refine ⟨ε, hε, ?_⟩
   intro a ha haz₀
-  let d := ⨅ (a : ℂ) (_ : a ∈ γ '' I), dist z₀ a
+  let d := ⨅ (x : ℂ) (_ : x ∈ γ '' I), dist z₀ x
   have hd : d > 0 := by {
     have hz0 : z₀ ∉ γ '' I := by {
       exact not_mem_of_mem_diff hz₀
@@ -204,6 +218,7 @@ theorem ω_continuous (γ : closed_curve)
     have hI : IsCompact (γ '' I) := by {
       exact IsCompact.image (by exact isCompact_Icc) (by exact closed_curve.Cont γ)
     }
+    unfold d
     sorry
   }
   let ε' := min (d/2) (ε/2)
@@ -217,11 +232,11 @@ theorem ω_continuous (γ : closed_curve)
     intro z hz
     exact fun w a ↦ norm_sub_le_norm_sub_add_norm_sub z₀ z w
   }
-  have hzwl : ∀ z ∈ Metric.ball z₀ ε', ‖z₀ - z‖ < d/2 := by {
+  have hzwl : ∀ z ∈ Metric.ball z₀ ε', ‖z₀ - z‖ < (d/2) := by {
     intro z hz
     sorry
   }
-  have hzwl' : ∀ z ∈ Metric.ball z₀ ε, ∀ w ∈ γ '' I, d < d/2 + ‖z - w‖ := by {
+  have hzwl' : ∀ z ∈ Metric.ball z₀ ε, ∀ w ∈ γ '' I, d < (d/2) + ‖z - w‖ := by {
     sorry
   }
 
@@ -244,17 +259,30 @@ theorem ω_continuous (γ : closed_curve)
             1 / (2 * ↑π * Complex.I) * ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - z₀) =
             1 / (2 * ↑π * Complex.I) * (∫ (t : ℝ) in I,(deriv γ.toFun t / (γ.toFun t - a) - deriv γ.toFun t / (γ.toFun t - z₀))) := by{
               calc
-                1 / (2 * ↑π * Complex.I) * ∫ (t : ℝ) in I,deriv γ.toFun t / (γ.toFun t - a) -
+                (1 / (2 * ↑π * Complex.I) * ∫ (t : ℝ) in I,deriv γ.toFun t / (γ.toFun t - a)) -
                 1 / (2 * ↑π * Complex.I) * ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - z₀) =
-                1 / (2 * ↑π * Complex.I) * (∫ (t : ℝ) in I,deriv γ.toFun t / (γ.toFun t - a) -
-                ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - z₀)) := by {
-                  --congr
+                1 / (2 * ↑π * Complex.I) * ((∫ (t : ℝ) in I,deriv γ.toFun t / (γ.toFun t - a) -
+                ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - z₀))) := by {
+                  rw [← mul_sub_left_distrib (1 / (2 * ↑π * Complex.I)) (∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - a)) (∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - z₀))]
+                  simp
+                  left
+                  have triv : (∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - a)) =
+                  ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - a) := by {
+                    rfl
+                  }
+                  rw [triv]
                   sorry
-                  --rw [← mul_sub_left_distrib (1 / (2 * ↑π * Complex.I)) (∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - a)) (∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - z₀))]
                 }
                 _ = 1 / (2 * ↑π * Complex.I) * (∫ (t : ℝ) in I, (deriv γ.toFun t / (γ.toFun t - a) - deriv γ.toFun t / (γ.toFun t - z₀))) := by {
-                  rw [hintaux, hintaux]
-                  sorry
+                  rw [hintaux] at *
+                  have hzoI : ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - z₀) =
+                  ∫ (t : ℝ) in (0)..1, deriv γ.toFun t / (γ.toFun t - z₀) := by rw [hintaux1]
+                  rw [hzoI, hintaux]
+                  have haux : ∫ (t : ℝ) in (0)..1, deriv γ.toFun t / (γ.toFun t - a) - deriv γ.toFun t / (γ.toFun t - z₀) =
+                  ∫ (t : ℝ) in (0)..1, deriv γ.toFun t / (γ.toFun t - a) - ∫ (t : ℝ) in (0)..1, deriv γ.toFun t / (γ.toFun t - z₀) := by {
+                    sorry
+                  }
+                  rw [haux]
                 }
             }
             rw [aux]
@@ -272,8 +300,42 @@ theorem ω_continuous (γ : closed_curve)
     have hanotin : a ∉ γ '' I := by {
       exact not_mem_of_mem_diff ha
     }
-    · sorry
-    · sorry
+
+    · have haI : ∀ x ∈ I, γ x ≠ a := by {
+        intro x hx
+        by_contra hcon
+        have hain : a ∈ γ '' I := ⟨x, hx, hcon⟩
+        exact hanotin hain
+      }
+      have haI1 : ∀ t ∈ I, γ t - a ≠ 0 := by {
+        intro x hx
+        specialize haI x
+        have tri : γ x ≠ a := haI hx
+        exact sub_ne_zero_of_ne tri
+      }
+      specialize haI1 t
+      have : γ.toFun t - a ≠ 0 := haI1 ht
+      exact this
+
+    · have hz₀notin : z₀ ∉ γ '' I := by {
+      exact not_mem_of_mem_diff hz₀
+     }
+
+      have haI : ∀ x ∈ I, γ x ≠ z₀ := by {
+        intro x hx
+        by_contra hcon
+        have hain : z₀ ∈ γ '' I := ⟨x, hx, hcon⟩
+        exact hz₀notin hain
+      }
+      have haI1 : ∀ t ∈ I, γ t - z₀ ≠ 0 := by {
+        intro x hx
+        specialize haI x
+        have tri : γ x ≠ z₀ := haI hx
+        exact sub_ne_zero_of_ne tri
+      }
+      specialize haI1 t
+      have : γ.toFun t - z₀ ≠ 0 := haI1 ht
+      exact this
   }
   have eq2 : ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - a) - deriv γ.toFun t / (γ.toFun t - z₀) =
   ∫ (t : ℝ) in I, (deriv γ.toFun t * (a - z₀)) / ((γ.toFun t - a) * (γ.toFun t - z₀)) := by {
@@ -282,11 +344,16 @@ theorem ω_continuous (γ : closed_curve)
   rw [eq2]
   have hnorm : ‖1 / (2 * ↑π * Complex.I) * ∫ (t : ℝ) in I, deriv γ.toFun t * (a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ =
   1 / (2 * π) * ‖∫ (t : ℝ) in I, deriv γ.toFun t * (a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ := by {
-    sorry
+    rw [norm_mul]
+    simp
+    left
+    exact pi_nonneg
   }
   rw [hnorm]
   have hnorm1 : ∃ C, ‖∫ (t : ℝ) in I, deriv γ.toFun t * (a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ ≤
   ∫ (t : ℝ) in I, C * ‖(a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ := by {
+    apply integral_le_const
+    sorry
     sorry
   }
   obtain ⟨C, hC⟩ := hnorm1
@@ -307,7 +374,7 @@ theorem ω_continuous (γ : closed_curve)
   have aux0 : ∀ t ∈ I, d ≤ ‖γ t - a‖ := by {
     sorry
   }
-  have aux1 : ∀ t ∈ I, d/2 ≤ ‖γ t - z₀‖ := by {
+  have aux1 : ∀ t ∈ I, (d/2) ≤ ‖γ t - z₀‖ := by {
     sorry
   }
   have hnorm4 : ∫ (t : ℝ) in I, ‖(a - z₀)‖ * ‖1/ ((γ.toFun t - a) * (γ.toFun t - z₀))‖ =
