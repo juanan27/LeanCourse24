@@ -42,7 +42,7 @@ lemma hintaux1 (f : ℝ → ℂ) : ∫ (t : ℝ) in I, f t =
       }
 
 
-lemma integral_le_const {a z₀ : ℂ} (γ : closed_curve) (h₁ : ∀ t : ℝ, γ.toFun t - a ≠ 0) (h₂ : ∀ t : ℝ, γ.toFun t - z₀ ≠ 0) :
+lemma integral_le_const {a z₀ : ℂ} (γ : closed_curve) (h₁ : ∀ t ∈ I, γ.toFun t - a ≠ 0) (h₂ : ∀ t ∈ I, γ.toFun t - z₀ ≠ 0) :
  ∃ C, ‖∫ (t : ℝ) in I, deriv γ.toFun t * (a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ ≤ ∫ t in I, C * ‖(a - z₀) / ((γ.toFun t - a) * (γ.toFun t - z₀))‖ := by {
   have hbound : ∃ C, ∀ t ∈ I, ‖deriv γ t‖ ≤ C := by {
     have hγ : ContinuousOn (deriv γ.toFun) I := by
@@ -140,7 +140,7 @@ lemma integral_le_const {a z₀ : ℂ} (γ : closed_curve) (h₁ : ∀ t : ℝ, 
       rw [hintaux2, hintaux3]
       apply intervalIntegral.integral_mono_on
       · exact zero_le_one' ℝ
-      · apply Continuous.intervalIntegrable -- cambiar por ContinuousOn!
+      · apply ContinuousOn.intervalIntegrable-- cambiar por ContinuousOn!
         have auxi : (fun u ↦ ‖deriv γ.toFun u‖ * ‖(a - z₀) / ((γ.toFun u - a) * (γ.toFun u - z₀))‖) =
         (fun u ↦ ‖deriv γ.toFun u * (a - z₀) / ((γ.toFun u - a) * (γ.toFun u - z₀))‖) := by {
           ext1 u
@@ -148,46 +148,69 @@ lemma integral_le_const {a z₀ : ℂ} (γ : closed_curve) (h₁ : ∀ t : ℝ, 
           ring_nf
         }
         rw [auxi]
-        apply Continuous.norm
-        apply Continuous.mul
-        · apply Continuous.mul
-          · exact closed_curve.Cont_deriv γ
-          · exact continuous_const
+        apply ContinuousOn.norm
+        apply ContinuousOn.mul
+        · apply ContinuousOn.mul
+          · have hI : [[0, 1]] = I := Set.uIcc_of_le zero_le_one
+            rw [hI]
+            exact curve.Cont_derivOn γ.tocurve
+          · exact continuousOn_const
         · have eq : (fun t => ((γ.toFun t - a) * (γ.toFun t - z₀))⁻¹) =
           (fun t => 1/((γ.toFun t - a) * (γ.toFun t - z₀))) := by {
             ext1 t
             rw [inv_eq_one_div]
           }
           rw [eq]
-          apply Continuous.div₀
-          · exact continuous_const
-          · apply Continuous.mul
-            · have h1aux : Continuous γ := by exact closed_curve.Cont γ
-              have h2aux : Continuous (fun (_ : ℝ) => a) := by exact continuous_const
-              exact Continuous.sub h1aux h2aux
-            · have h1aux : Continuous γ := by exact closed_curve.Cont γ
-              have h2aux : Continuous (fun (_ : ℝ) => z₀) := by exact continuous_const
-              exact Continuous.sub h1aux h2aux
-          · intro x
+          apply ContinuousOn.div₀
+          · exact continuousOn_const
+          · apply ContinuousOn.mul
+            · have h1aux : ContinuousOn γ I := by {
+                exact closed_curve.ContOn γ
+              }
+              have h2aux : ContinuousOn (fun (_ : ℝ) => a) I := by exact continuousOn_const
+              have hI : [[0, 1]] = I := Set.uIcc_of_le zero_le_one
+              rw [← hI] at h1aux h2aux
+              exact ContinuousOn.sub h1aux h2aux
+            · have h1aux : ContinuousOn γ I := by {
+                exact closed_curve.ContOn γ
+              }
+              have h2aux : ContinuousOn (fun (_ : ℝ) => z₀) I := by exact continuousOn_const
+              have hI : [[0, 1]] = I := Set.uIcc_of_le zero_le_one
+              rw [← hI] at h1aux h2aux
+              exact ContinuousOn.sub h1aux h2aux
+          · intro x hx
             rw [mul_ne_zero_iff]
-            exact ⟨h₁ x, h₂ x⟩
+            have hI : [[0, 1]] = I := Set.uIcc_of_le zero_le_one
+            rw [hI] at hx
+            exact ⟨h₁ x hx, h₂ x hx⟩
 
-      · apply Continuous.intervalIntegrable
-        apply Continuous.mul
-        · exact continuous_const
-        · apply Continuous.norm
-          apply Continuous.div₀
-          · exact continuous_const
-          · apply Continuous.mul
-            · have h1aux : Continuous γ := by exact closed_curve.Cont γ
-              have h2aux : Continuous (fun (_ : ℝ) => a) := by exact continuous_const
-              exact Continuous.sub h1aux h2aux
-            · have h1aux : Continuous γ := by exact closed_curve.Cont γ
-              have h2aux : Continuous (fun (_ : ℝ) => z₀) := by exact continuous_const
-              exact Continuous.sub h1aux h2aux
-          · intro x
+      · apply ContinuousOn.intervalIntegrable
+        apply ContinuousOn.mul
+        · exact continuousOn_const
+        · apply ContinuousOn.norm
+          apply ContinuousOn.div₀
+          · exact continuousOn_const
+          · apply ContinuousOn.mul
+            · have h1aux : ContinuousOn γ I := by {
+                exact closed_curve.ContOn γ
+              }
+              have h2aux : ContinuousOn (fun (_ : ℝ) => a) I := by exact continuousOn_const
+              have hI : [[0, 1]] = I := Set.uIcc_of_le zero_le_one
+              rw [← hI] at h1aux h2aux
+              exact ContinuousOn.sub h1aux h2aux
+            · have h1aux : ContinuousOn γ I := by {
+                exact closed_curve.ContOn γ
+              }
+              have h2aux : ContinuousOn (fun (_ : ℝ) => z₀) I := by exact continuousOn_const
+              have hI : [[0, 1]] = I := Set.uIcc_of_le zero_le_one
+              rw [← hI] at h1aux h2aux
+              exact ContinuousOn.sub h1aux h2aux
+          · intro x hx
             rw [mul_ne_zero_iff]
-            exact ⟨h₁ x, h₂ x⟩
+            have hI : [[0, 1]] = I := Set.uIcc_of_le zero_le_one
+            rw [hI] at hx
+            exact ⟨h₁ x hx, h₂ x hx⟩
+
       · intro x hx
         let b := ‖(a - z₀) / ((γ.toFun x - a) * (γ.toFun x - z₀))‖
         have hb : ‖(a - z₀) / ((γ.toFun x - a) * (γ.toFun x - z₀))‖ = b := rfl
@@ -210,7 +233,7 @@ theorem ω_continuous (γ : closed_curve)
   intro z₀ hz₀ ε hε
   refine ⟨ε, hε, ?_⟩
   intro a ha haz₀
-  let d := ⨅ (x : ℂ) (_ : x ∈ γ '' I), dist z₀ x
+  let d := Metric.infDist z₀ (γ '' I)
   have hd : d > 0 := by {
     have hz0 : z₀ ∉ γ '' I := by {
       exact not_mem_of_mem_diff hz₀
@@ -219,8 +242,19 @@ theorem ω_continuous (γ : closed_curve)
       exact IsCompact.image (by exact isCompact_Icc) (by exact closed_curve.Cont γ)
     }
     unfold d
-    sorry
+    have hIclo : IsClosed (γ '' I) := by {
+      exact IsCompact.isClosed hI
+    }
+    have hInonemp : Set.Nonempty (γ '' I) := by {
+      exact nonempty_of_nonempty_subtype
+    }
+    have haux : z₀ ∉ (γ '' I) ↔ 0 < Metric.infDist z₀ (γ '' I) := by {
+      exact IsClosed.not_mem_iff_infDist_pos hIclo hInonemp
+    }
+    have := haux.1 hz0
+    exact this
   }
+
   let ε' := min (d/2) (ε/2)
   have hd1 : ∀ w ∈ γ '' I, d ≤ ‖z₀ - w‖ := by {
     intro w hw
