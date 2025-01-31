@@ -221,8 +221,8 @@ lemma integral_le_const {a z₀ : ℂ} (γ : closed_curve) (h₁ : ∀ t ∈ I, 
     }
   }
 
-/- The next theorem claims that the index function, the so-called winding number but with non-fixed z, this is:
-    fun z => 1/(2*π*i) * ∫ t in I, (deriv γ' t) / (γ t - z)
+/- The next theorem claims that the index function, the so-called winding number but with non-fixed z (this is:
+    fun z => 1/(2*π*i) * ∫ t in I, (deriv γ' t) / (γ t - z) )
     is continuous on the two connected components of ℂ \ (γ '' I), which we have labelled as
     interior and exterior of γ.
   -/
@@ -312,10 +312,14 @@ theorem ω_continuous (γ : closed_curve)
       1 / (2 * ↑π * Complex.I) * ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - a)
       - 1 / (2 * ↑π * Complex.I) * ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - z₀) := by {
         refine Eq.symm (eq_sub_iff_add_eq'.mpr ?_)
-        simp_all only [mem_diff, Set.mem_univ, Set.mem_image, Set.mem_Icc, not_exists, not_and, and_imp, true_and,
-          gt_iff_lt, Complex.norm_eq_abs, forall_exists_index, mem_ball, lt_min_iff, one_div, mul_inv_rev,
-          Complex.inv_I, neg_mul, sub_neg_eq_add, d, ε']
-        sorry
+        have haux₁ : (1 / (2 * ↑π * Complex.I) * ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - z₀)) + 1 / (2 * ↑π * Complex.I) * ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - a) - 1 / (2 * ↑π * Complex.I) * ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - z₀) =
+        ((1 / (2 * ↑π * Complex.I) * ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - z₀)) - 1 / (2 * ↑π * Complex.I) * ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - z₀))  + 1 / (2 * ↑π * Complex.I) * ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - a) := by {
+          sorry
+        }
+        rw[haux₁]
+        have haux₂ : ((1 / (2 * ↑π * Complex.I) * ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - z₀)) - 1 / (2 * ↑π * Complex.I) * ∫ (t : ℝ) in I, deriv γ.toFun t / (γ.toFun t - z₀)) = 0 := by ring
+        rw[haux₂]
+        norm_num
       }
       rw [haux]
     }
