@@ -15,7 +15,7 @@
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}{Lemma}
 % Title and Author Information
-\title{Winding Number of a Curve - LEAN4 Project (Logbook)}
+\title{Winding Number of a Curve - LEAN4 Project}
 \author{Jorge Carrasco Coquillat \and
 Juan Antonio Montalbán Vidal}
 \date{\today} % Use \date{} to leave the date empty or set a custom date
@@ -27,9 +27,9 @@ Juan Antonio Montalbán Vidal}
 
 % Abstract
 \begin{abstract}
-In this logbook we aim to show how the journey with this project has been since day 0.
-The content is divided in weeks, so we explain what we have been doing weekly,
-decisions made and main difficulties we have had to tackle.
+In this document we aim to share our experience with this project, including the first problems we encountered,
+such as choosing the project topic, main results we have formalized alongside with the difficulties we have had to
+overcome. We finish with some conclusions and a short reflection. We will mainly follow \cite{COB22}.
 \end{abstract}
 
 % Sections
@@ -94,20 +94,41 @@ The main results we have formalized are the following:
 \end{theorem}
 
 \begin{theorem}
+  Given a curve $\gamma$ with winding number $n \in \mathbb{Z}$, the winding number of the reverse curve,
+  say $\tilde{\gamma}$, is precisely $-n$.
+\end{theorem}
+
+\begin{theorem}
   The winding number $\omega(\gamma, z)$, seen as a function of $z$, is continuous in $\mathbb{C}\setminus \text{im}\gamma$.
 \end{theorem}
 \section{Main difficulties}
-Here is the main content of the article.
-
+\begin{itemize}
+  \item Coming up with the most suitable definition for curves.
+  \item As a complementary definition we thought about adding the concatenation of curves, i.e.,
+  piecewise curves, as we explained in the presentation. However, as Floris noticed, the definition was not
+  accurate, since we had to add conditions of differentiability in the "glueing" points of the curves. For this
+  reason, we have decided to remove this concept from our work. Nonetheless, it would be a great (maybe future work,
+  outside the lecture) to formalize this concept properly and prove the same theorems for them, then providing a
+  more general treatment of the winding number for piecewise curves.
+  \item Proving continuity of the index function. Mathlib misses results missing continuity of parametric
+  integrals (which is a fundamental concept in mathematics, namely in analysis and PDEs) so we had to do it the classical
+  way - using the $\varepsilon - \delta$ definition of continuity. It is usually tedious to work with this concept
+  on paper, thus doing it in LEAN4 has been, sometimes, a big trouble.
+\end{itemize}
 \subsection{Difficulties and, in some cases, solutions}
 DISCUSS!!!
 
 \section{Conclusion and possible future work}
-DISCUSS!!!
+As we discussed in the presentation, one of the main conclusions that arise from this project is that
+Mathlib desperately needs contributions - there exist several gaps regarding important results and concepts.
+Besides this, refining the treatment and work with integrals would be appreciated. For instance, a recurrent problem
+we have faced is the following: let $I_1, I_2$ be two definite integrals. LEAN4 doesn't interpret these expressions as the same:
+$$I_1 - I_2 = (I_1) - I_2.$$
+Sometimes, the RHS of the equation was directly obtained from obtaining a lemma that doesn't involve any parentheses.
 
 % References
 \begin{thebibliography}{9}
-\bibitem{sample1} Author Name, \textit{Book Title}, Publisher, Year.
+\bibitem{COB22} Cobos Díaz, Fernando, \textit{Notas de clase de Análisis Complejo}, 2022.
 \bibitem{sample2} Another Author, \textit{Another Book}, Another Publisher, Year.
 \end{thebibliography}
 
