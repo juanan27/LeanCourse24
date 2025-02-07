@@ -12,6 +12,7 @@
 \usepackage{hyperref}          % Hyperlinks in the document
 \usepackage{amsthm}
 
+\newcommand{\imm}{\operatorname{im}}
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}{Lemma}
 % Title and Author Information
@@ -65,23 +66,11 @@ For us, a curve $\gamma$ will be a $\cal{C}^1 (\text{I}, \mathbb{C})$ function, 
 
 After spending half a week discussing wether we should try proving the equivalence of definitions we
 noticed that there was a big problem regarding this issue: there are a lot of results missing in Mathlib
-- especially from algebraic topology - which be would need just to get to define the winding number.
+--- especially from algebraic topology --- which we would had need just to get to define the winding number.
 
 \section{Main formalized results}
-The very first thing we had to tackle, far from a lemma or theorem, was giving the right - this is, the
-most accurate one - definition of a curve. First we opted for defining it for an arbitrary interval $(a, b)$
-but we rapidly noticed this was unnecesary and the vast majority of the literature simply used the unit interval,
-so we decided to change to that.
 
-But that was not the unique thing we had to change about the structure definition of a (closed) curve. At the beginning, we opted
-for putting the continuity and differentiability conditions separately but, after hearing the given advices, we noticed
-the best option was to put them together using the \verb|ContDiffOn| condition from Mathlib library.
-
-\noindent \textbf{Remark 1:} we have also defined the concept of \textit{n-piecewise curve}, i.e., a curve that is the result
-of the concatenation of n simple curves. This is a more general concept than a curve itself and, even though
-we do not formalize theorems using them, we have thought it would be of interest to get them defined.
-
-\noindent \textbf{Remark 2:} the sign of the winding number depends on the orientation we choose for going along
+\noindent \textbf{Remark:} the sign of the winding number depends on the orientation we choose for going along
 the curve or, in other words, if the curve winds \textit{clockwise} or \textit{counterclockwise} around the point.
 For the sake of simplicity, we have chosen the counterclockwise orientation as the default one. In the case a curve is given
 in the opposite orientation, we can always perform a change of basis to get back to desired scenario.
@@ -99,11 +88,17 @@ The main results we have formalized are the following:
 \end{theorem}
 
 \begin{theorem}
-  The winding number $\omega(\gamma, z)$, seen as a function of $z$, is continuous in $\mathbb{C}\setminus \text{im}\gamma$.
+  The winding number $\omega(\gamma, z)$, seen as a function of $z$, is continuous in $\mathbb{C}\setminus \imm \gamma$.
 \end{theorem}
-\section{Main difficulties}
+\section{Main difficulties and solutions}
 \begin{itemize}
-  \item Coming up with the most suitable definition for curves.
+  \item Coming up with the most suitable definition for curves. The very first thing we had to tackle, far from a lemma or theorem, was giving the right - this is, the
+  most accurate one - definition of a curve. First we opted for defining it for an arbitrary interval $(a, b)$
+  but we rapidly noticed this was unnecesary and the vast majority of the literature simply used the unit interval,
+  so we decided to change to that.
+  \item But that was not the unique thing we had to change about the structure definition of a (closed) curve. At the beginning, we opted
+  for putting the continuity and differentiability conditions separately but, after hearing the given advices, we noticed
+  the best option was to put them together using the \verb|ContDiffOn| condition from Mathlib library.
   \item As a complementary definition we thought about adding the concatenation of curves, i.e.,
   piecewise curves, as we explained in the presentation. However, as Floris noticed, the definition was not
   accurate, since we had to add conditions of differentiability in the "glueing" points of the curves. For this
@@ -114,9 +109,9 @@ The main results we have formalized are the following:
   integrals (which is a fundamental concept in mathematics, namely in analysis and PDEs) so we had to do it the classical
   way - using the $\varepsilon - \delta$ definition of continuity. It is usually tedious to work with this concept
   on paper, thus doing it in LEAN4 has been, sometimes, a big trouble.
+  \item As an extra point, we would like to add how the harsh treatment some analytic expressions require. Further analysis and
+  comment on this can be found in the conclusions.
 \end{itemize}
-\subsection{Difficulties and, in some cases, solutions}
-DISCUSS!!!
 
 \section{Conclusion and possible future work}
 As we discussed in the presentation, one of the main conclusions that arise from this project is that
