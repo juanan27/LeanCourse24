@@ -30,29 +30,29 @@ Juan Antonio Montalbán Vidal}
 \begin{abstract}
 In this document we aim to share our experience with this project, including the first problems we encountered,
 such as choosing the project topic, main results we have formalized alongside with the difficulties we have had to
-overcome. We finish with some conclusions and a short reflection. We will mainly follow \cite{COB22}.
+overcome. We finish with some conclusions and a short reflection. We have mainly followed \cite{COB22}.
 \end{abstract}
 
 % Sections
 \section{Choosing our project topic}
 There were various options that seemed good for us, from Carmichael numbers
 to orientability of manifolds. Lastly, we decided to work in a complex analysis topic:
-the winding number.
+winding numbers.
 
 The winding number of a curve can be defined in several ways, although we only
-focused on the topological and analytic ones. Our main goal was going to be
-to prove the equivalence between these definitions, albeit we quickly noticed
-it was going to be a very stretch goal due to its complexity and the time we had.
+aimed towards the topological and analytic definitions. We firstly thought about
+proving the equivalence between these definitions, albeit we quickly noticed
+it was going to be too difficult due to its complexity and the time we had. 
+This is why we decided to focus on the definitions and properties of winding numbers.
 
-Since this project focuses on the definition and properties of the winding number,
-we will now give the definition of \textit{curve} that we have used - there is no a general
-consensus on how to define them, especially regarding the definition interval.
+We will now give the definition of \textit{curve} that we have used - there is not a general
+consensus on how to define them in LEAN, especially regarding the definition interval.
 
 For us, a curve $\gamma$ will be a $\cal{C}^1 (\text{I}, \mathbb{C})$ function, where I stands for the unit interval.
 
 \begin{itemize}
-  \item \textbf{Topological definition:} it uses the path-lifting property [ref]. Given
-  a curve $\gamma : [0, 1] \to \mathbb{C}$ and $z_0 \in C$ satisfying $z \notin \text{im} \gamma$, the winding
+  \item \textbf{Topological definition:} it uses the path-lifting property \cite{sample2}. Given
+  a curve $\gamma : [0, 1] \to \mathbb{C}$ and $z_0 \in \mathbb{C}$ satisfying $z \notin \text{im} \gamma$, the winding
   number of $\gamma$ around $z_0$ is defined as
   $$\omega (\gamma, z_0) = s(1) - s(0),$$
   where $(\rho, s)$ is the path written in polar coordinates, this is, the lifted path
@@ -64,7 +64,7 @@ For us, a curve $\gamma$ will be a $\cal{C}^1 (\text{I}, \mathbb{C})$ function, 
   $$\omega(\gamma, z_0) = \frac{1}{2\pi i} \int_{0}^{1} {\frac{\gamma'(t)}{\gamma(t)-z_0} \text{dt}}.$$
 \end{itemize}
 
-After spending half a week discussing wether we should try proving the equivalence of definitions we
+After spending half a week discussing whether we should try proving the equivalence of definitions we
 noticed that there was a big problem regarding this issue: there are a lot of results missing in Mathlib
 --- especially from algebraic topology --- which we would had need just to get to define the winding number.
 
@@ -72,23 +72,26 @@ noticed that there was a big problem regarding this issue: there are a lot of re
 
 \noindent \textbf{Remark:} the sign of the winding number depends on the orientation we choose for going along
 the curve or, in other words, if the curve winds \textit{clockwise} or \textit{counterclockwise} around the point.
-For the sake of simplicity, we have chosen the counterclockwise orientation as the default one. In the case a curve is given
-in the opposite orientation, we can always perform a change of basis to get back to desired scenario.
 
 The main results we have formalized are the following:
 \begin{theorem}
-    Given a curve $\gamma$ and a point $z_0$ satisfying (P), then
+    Given a curve $\gamma$ and a point $z_0$ satisfying $z \notin \text{im} \gamma$, then
     $$\omega(\gamma, z_0) \in \mathbb{Z}.$$
     In other words, the winding number of a curve around a point is always an integer.
 \end{theorem}
 
 \begin{theorem}
-  Given a curve $\gamma$ with winding number $n \in \mathbb{Z}$, the winding number of the reverse curve,
-  say $\tilde{\gamma}$, is precisely $-n$.
+  Given a curve $\gamma$ with winding number $n \in \mathbb{Z}$, the winding number of the reverse curve
+  is $-n$.
 \end{theorem}
 
 \begin{theorem}
   The winding number $\omega(\gamma, z)$, seen as a function of $z$, is continuous in $\mathbb{C}\setminus \imm \gamma$.
+\end{theorem}
+
+\begin{theorem}
+Let $\gamma$ be the unit circle (parametrized in [0,1] by $t \mapsto e^{2\pi i t}$ . If $|z_0| > 1$, then 
+$\omega(\gamma, z_0) = 0$. And, if $|z_0| < 1$, then $\omega (\gamma, z_0) = 1$.
 \end{theorem}
 \section{Main difficulties and solutions}
 \begin{itemize}
@@ -97,14 +100,8 @@ The main results we have formalized are the following:
   but we rapidly noticed this was unnecesary and the vast majority of the literature simply used the unit interval,
   so we decided to change to that.
   \item But that was not the unique thing we had to change about the structure definition of a (closed) curve. At the beginning, we opted
-  for putting the continuity and differentiability conditions separately but, after hearing the given advices, we noticed
+  for putting the continuity and differentiability conditions separately but, after hearing the given advice, we noticed
   the best option was to put them together using the \verb|ContDiffOn| condition from Mathlib library.
-  \item As a complementary definition we thought about adding the concatenation of curves, i.e.,
-  piecewise curves, as we explained in the presentation. However, as Floris noticed, the definition was not
-  accurate, since we had to add conditions of differentiability in the "glueing" points of the curves. For this
-  reason, we have decided to remove this concept from our work. Nonetheless, it would be a great (maybe future work,
-  outside the lecture) to formalize this concept properly and prove the same theorems for them, then providing a
-  more general treatment of the winding number for piecewise curves.
   \item Proving continuity of the index function. Mathlib misses results missing continuity of parametric
   integrals (which is a fundamental concept in mathematics, namely in analysis and PDEs) so we had to do it the classical
   way - using the $\varepsilon - \delta$ definition of continuity. It is usually tedious to work with this concept
@@ -113,18 +110,19 @@ The main results we have formalized are the following:
   comment on this can be found in the conclusions.
 \end{itemize}
 
+\section{\textit{Sorrys} left to be solved in the project}
+The only \textit{sorrys} that were left in the project are present in the document 'winding_continous.lean'. 
+Most of them we think are not difficult to solve, but rather tedious and we did not have time to do so.
 \section{Conclusion and possible future work}
 As we discussed in the presentation, one of the main conclusions that arise from this project is that
-Mathlib desperately needs contributions - there exist several gaps regarding important results and concepts.
-Besides this, refining the treatment and work with integrals would be appreciated. For instance, a recurrent problem
-we have faced is the following: let $I_1, I_2$ be two definite integrals. LEAN4 doesn't interpret these expressions as the same:
-$$I_1 - I_2 = (I_1) - I_2.$$
-Sometimes, the RHS of the equation was directly obtained from obtaining a lemma that doesn't involve any parentheses.
-
+Mathlib still needs some contributions - there exist several gaps regarding important results and concepts.
+As well, refining the treatment and work with integrals would be a good improvement. For future work, the 
+equivalence of the analytic definition of winding numbers given in this project and the topological definition
+could also be proven.
 % References
 \begin{thebibliography}{9}
 \bibitem{COB22} Cobos Díaz, Fernando, \textit{Notas de clase de Análisis Complejo}, 2022.
-\bibitem{sample2} Another Author, \textit{Another Book}, Another Publisher, Year.
+\bibitem{sample2} Wilkins, D. R. \textit{Course 212 (Topology), Academic Year 1991—92, Section 09: Winding Numbers}, \url{https://www.maths.tcd.ie/~dwilkins/Courses/212/}, 1992.
 \end{thebibliography}
 
 \end{document}

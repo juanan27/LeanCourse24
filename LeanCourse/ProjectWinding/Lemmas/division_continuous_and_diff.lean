@@ -111,7 +111,7 @@ lemma inverse_differentiable_ball_2 {g : ℂ → ℂ}
 lemma ftc {f : ℝ → ℂ} (hf : Continuous f) (a b : ℝ) :
     deriv (fun u ↦ ∫ x : ℝ in a..u, f x) b = f b :=
   (hf.integral_hasStrictDerivAt a b).hasDerivAt.deriv
--- We prove now that the winding number is always an integer. We introduce the following lemma:
+-- We want to prove now that the winding number is always an integer. We introduce the following lemma:
 
 lemma exp_one (z : ℂ) (h_1 : Complex.exp z = 1) : ∃ k : ℤ, z = 2 * Real.pi * k * Complex.I := by {
   have h : Complex.exp z = 1 → ∃ n : ℤ , z = n * (2 * ↑π * Complex.I) := by exact Complex.exp_eq_one_iff.1

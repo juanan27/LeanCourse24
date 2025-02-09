@@ -434,9 +434,7 @@ lemma winding_circle_inside (γ : closed_curve) (h_circle : ∀ t ∈ I, γ t = 
     }
     simp[h₀]
 }
--- Next?
 
--- DISCRETE WINDING NUMBER??
 #check constant_of_derivWithin_zero
 #check Continuous.deriv_integral
 #check circleIntegral.integral_sub_inv_of_mem_ball
