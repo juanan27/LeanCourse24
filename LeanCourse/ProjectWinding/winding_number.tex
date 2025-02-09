@@ -11,8 +11,12 @@
 \usepackage{graphicx}          % Include graphics
 \usepackage{hyperref}          % Hyperlinks in the document
 \usepackage{amsthm}
+\usepackage{setspace}
 
 \newcommand{\imm}{\operatorname{im}}
+\newcommand{\innt}{\operatorname{int}}
+\newcommand{\ext}{\operatorname{ext}}
+\newcommand{\norm}[1]{\lVert#1\rVert}
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}{Lemma}
 % Title and Author Information
@@ -25,34 +29,30 @@ Juan Antonio Montalbán Vidal}
 
 % Title Page
 \maketitle
-
+\setstretch{1.5}
 % Abstract
 \begin{abstract}
-In this document we aim to share our experience with this project, including the first problems we encountered,
-such as choosing the project topic, main results we have formalized alongside with the difficulties we have had to
+This document serves as record for our formalization project in LEAN4. We aim to share our experience with this project, including the first problems we encountered,
+such as choosing the project topic, and what we have formalized alongside within the difficulties we have had to
 overcome. We finish with some conclusions and a short reflection. We will mainly follow \cite{COB22}.
 \end{abstract}
 
 % Sections
 \section{Choosing our project topic}
 There were various options that seemed good for us, from Carmichael numbers
-to orientability of manifolds. Lastly, we decided to work in a complex analysis topic:
-the winding number.
+to orientability of manifolds. Lastly, we decided to work on a complex analysis topic: winding numbers.
 
-The winding number of a curve can be defined in several ways, although we only
-focused on the topological and analytic ones. Our main goal was going to be
+The winding number of a curve can be defined in several ways, although we only aimed at the topological and analytic definitions. Our main goal was going to be
 to prove the equivalence between these definitions, albeit we quickly noticed
-it was going to be a very stretch goal due to its complexity and the time we had.
-
-Since this project focuses on the definition and properties of the winding number,
-we will now give the definition of \textit{curve} that we have used - there is no a general
+it was going to be a very stretch goal due to its complexity and the time we had. This is why we finally focused on the analytic definition and the properties of the winding number. \par
+We will now give the definition of \textit{curve} that we have used - there is no a general
 consensus on how to define them, especially regarding the definition interval.
 
 For us, a curve $\gamma$ will be a $\cal{C}^1 (\text{I}, \mathbb{C})$ function, where I stands for the unit interval.
 
 \begin{itemize}
-  \item \textbf{Topological definition:} it uses the path-lifting property [ref]. Given
-  a curve $\gamma : [0, 1] \to \mathbb{C}$ and $z_0 \in C$ satisfying $z \notin \text{im} \gamma$, the winding
+  \item \textbf{Topological definition:} it uses the path-lifting property \cite{sample2}. Given
+  a curve $\gamma : [0, 1] \to \mathbb{C}$ and $z_0 \in \mathbb{C}$ satisfying $z \notin \text{im} \gamma$, the winding
   number of $\gamma$ around $z_0$ is defined as
   $$\omega (\gamma, z_0) = s(1) - s(0),$$
   where $(\rho, s)$ is the path written in polar coordinates, this is, the lifted path
@@ -64,20 +64,31 @@ For us, a curve $\gamma$ will be a $\cal{C}^1 (\text{I}, \mathbb{C})$ function, 
   $$\omega(\gamma, z_0) = \frac{1}{2\pi i} \int_{0}^{1} {\frac{\gamma'(t)}{\gamma(t)-z_0} \text{dt}}.$$
 \end{itemize}
 
-After spending half a week discussing wether we should try proving the equivalence of definitions we
+After spending half a week discussing whether we should try proving the equivalence of definitions we
 noticed that there was a big problem regarding this issue: there are a lot of results missing in Mathlib
---- especially from algebraic topology --- which we would had need just to get to define the winding number.
+--- especially from algebraic topology --- which we would have needed just to get to define the winding number.
 
-\section{Main formalized results}
+\section{Formalized concepts and results}
 
-\noindent \textbf{Remark:} the sign of the winding number depends on the orientation we choose for going along
-the curve or, in other words, if the curve winds \textit{clockwise} or \textit{counterclockwise} around the point.
-For the sake of simplicity, we have chosen the counterclockwise orientation as the default one. In the case a curve is given
-in the opposite orientation, we can always perform a change of basis to get back to desired scenario.
+\noindent \textbf{Remark.} The sign of the winding number depends on the orientation we choose for going along
+the curve or, in other words, if the curve winds \textit{clockwise} or \textit{counterclockwise} around the point. \par
+For the sake of simplicity, we have chosen the counterclockwise orientation as the default one.
 
-The main results we have formalized are the following:
+Previous to the \textit{big theorems}, we present some lemmas.
+
+\begin{lemma}
+  The exterior and interior of a curve, defined on its own natural way, are disjoint sets.
+\end{lemma}
+Related to this, we have:
+
+\begin{lemma}
+  Let $\gamma$ be a closed curve. Then,
+  $$\innt \gamma \cup \ext \gamma \cup \imm \gamma = \mathbb{C}.$$
+\end{lemma}
+
+The theorems we have formalized are the following:
 \begin{theorem}
-    Given a curve $\gamma$ and a point $z_0$ satisfying (P), then
+    Given a curve $\gamma$ and a point $z_0\notin \imm \gamma$, then
     $$\omega(\gamma, z_0) \in \mathbb{Z}.$$
     In other words, the winding number of a curve around a point is always an integer.
 \end{theorem}
@@ -88,43 +99,49 @@ The main results we have formalized are the following:
 \end{theorem}
 
 \begin{theorem}
-  The winding number $\omega(\gamma, z)$, seen as a function of $z$, is continuous in $\mathbb{C}\setminus \imm \gamma$.
+  The winding number $\omega(\gamma, z)$, seen as a function of $z$ (sometimes called the \textbf{index function}), is continuous in $\mathbb{C}\setminus \imm \gamma$.
+\end{theorem}
+\begin{theorem}
+    Let $\gamma $ be the unit circle, parametrized (in the unit interval) by $\gamma(t) = e^{2\pi i t}$. If $|z| < 1$, then $\omega(\gamma, z)$ = 1. And, if $|z| > 1$, then $\omega(\gamma, z)$ = 0.
 \end{theorem}
 \section{Main difficulties and solutions}
 \begin{itemize}
   \item Coming up with the most suitable definition for curves. The very first thing we had to tackle, far from a lemma or theorem, was giving the right - this is, the
-  most accurate one - definition of a curve. First we opted for defining it for an arbitrary interval $(a, b)$
-  but we rapidly noticed this was unnecesary and the vast majority of the literature simply used the unit interval,
+  most accurate one - definition of a curve. First we opted for defining it for an arbitrary interval $(a, b)$,
+  but we quickly noticed this was unnecesary and the vast majority of the literature simply used the unit interval,
   so we decided to change to that.
-  \item But that was not the unique thing we had to change about the structure definition of a (closed) curve. At the beginning, we opted
-  for putting the continuity and differentiability conditions separately but, after hearing the given advices, we noticed
+  \item The above was not the only thing we had to change about the structure definition of a (closed) curve. At the beginning, we opted
+  for placing the continuity and differentiability conditions separately. However, after hearing the given advices, we noticed
   the best option was to put them together using the \verb|ContDiffOn| condition from Mathlib library.
-  \item As a complementary definition we thought about adding the concatenation of curves, i.e.,
-  piecewise curves, as we explained in the presentation. However, as Floris noticed, the definition was not
-  accurate, since we had to add conditions of differentiability in the "glueing" points of the curves. For this
-  reason, we have decided to remove this concept from our work. Nonetheless, it would be a great (maybe future work,
-  outside the lecture) to formalize this concept properly and prove the same theorems for them, then providing a
-  more general treatment of the winding number for piecewise curves.
+  \item As a complementary definition we thought about adding the concatenation of curves, i.e.
+  \textit{piecewise curves}, as we explained in the presentation. However, the definition was not
+  accurate, since we had to add conditions of differentiability in the glueing points of the curves. For this
+  reason, we have decided to remove this concept from our work, since we did not use it. Nonetheless, it would be great (maybe future work,
+  outside of the course) to formalize this concept properly and prove the same theorems for them, thus providing a
+  more general treatment of the winding number.
   \item Proving continuity of the index function. Mathlib misses results missing continuity of parametric
-  integrals (which is a fundamental concept in mathematics, namely in analysis and PDEs) so we had to do it the classical
+  integrals (which is a fundamental concept in mathematics, namely in analysis and PDEs), so we had to do it the classical
   way - using the $\varepsilon - \delta$ definition of continuity. It is usually tedious to work with this concept
   on paper, thus doing it in LEAN4 has been, sometimes, a big trouble.
-  \item As an extra point, we would like to add how the harsh treatment some analytic expressions require. Further analysis and
+  \item Dull treatment of some analytic expression. Further analysis and
   comment on this can be found in the conclusions.
 \end{itemize}
-
+\section{\textit{Sorrys} left in the project}
+There are just a few \textit{sorrys} left in the project, all of them in the document \textit{winding\_continuous.lean}. We believe they are not at all difficult to solve, but rather tedious and not really insightful, and we have not had the time to solve them fully.
 \section{Conclusion and possible future work}
 As we discussed in the presentation, one of the main conclusions that arise from this project is that
-Mathlib desperately needs contributions - there exist several gaps regarding important results and concepts.
+Mathlib still needs some contributions - there exist several gaps regarding important results and concepts.
 Besides this, refining the treatment and work with integrals would be appreciated. For instance, a recurrent problem
 we have faced is the following: let $I_1, I_2$ be two definite integrals. LEAN4 doesn't interpret these expressions as the same:
 $$I_1 - I_2 = (I_1) - I_2.$$
 Sometimes, the RHS of the equation was directly obtained from obtaining a lemma that doesn't involve any parentheses.
 
+As we have already commented in the previous section, generalizing the formalized results to piecewise curves would be a good way to continue this project.
+
 % References
 \begin{thebibliography}{9}
-\bibitem{COB22} Cobos Díaz, Fernando, \textit{Notas de clase de Análisis Complejo}, 2022.
-\bibitem{sample2} Another Author, \textit{Another Book}, Another Publisher, Year.
+\bibitem{COB22} Cobos Díaz, Fernando, \textit{Notas de clase de Análisis Complejo}, Universidad Complutense de Madrid, 2022.
+\bibitem{sample2} Wilkins, D.R., \textit{Course 212 (Topology) Notes}, Trinity College Dublin, 1992.
 \end{thebibliography}
 
 \end{document}
