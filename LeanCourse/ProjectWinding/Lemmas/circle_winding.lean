@@ -1,31 +1,16 @@
 import Mathlib.Data.Real.Basic
-import Mathlib.Analysis.Calculus.FDeriv.Basic
 import Mathlib.Analysis.Calculus.Deriv.Basic
 import Mathlib.Data.Complex.Basic
 import Mathlib.MeasureTheory.Integral.IntervalIntegral
-import Mathlib.Analysis.Calculus.FDeriv.Basic
-import Mathlib.Analysis.Normed.Field.Basic
-import Mathlib.Data.Finset.Basic
-import Mathlib.Analysis.Calculus.FDeriv.Mul
-import Mathlib.Analysis.Calculus.Deriv.Mul
-import Mathlib.Analysis.Calculus.Deriv.Add
-import Mathlib.Topology.Algebra.ConstMulAction
 import Mathlib.Analysis.Calculus.Deriv.Comp
 import Mathlib.Topology.ContinuousOn
 import Mathlib.Order.Interval.Basic
 import Mathlib.Topology.UnitInterval
-import Mathlib.Analysis.SpecialFunctions.Trigonometric.Deriv
 import Mathlib.Analysis.Calculus.Deriv.Prod
 import Mathlib.Analysis.Calculus.Deriv.Pow
-import Mathlib.Analysis.SpecialFunctions.Integrals
 import Mathlib.Analysis.Convolution
-import Mathlib.Data.Real.Irrational
 import Mathlib.Tactic
-import Mathlib.Analysis.Complex.CauchyIntegral
-import Mathlib.MeasureTheory.Function.Jacobian
 import Mathlib.Algebra.GroupWithZero.Basic
-import Mathlib.MeasureTheory.Measure.MeasureSpaceDef
-import Mathlib.MeasureTheory.Function.L1Space
 import LeanCourse.ProjectWinding.Definitions.curves
 import LeanCourse.ProjectWinding.Lemmas.division_continuous_and_diff
 
@@ -434,8 +419,3 @@ lemma winding_circle_inside (γ : closed_curve) (h_circle : ∀ t ∈ I, γ t = 
     }
     simp[h₀]
 }
-
-#check constant_of_derivWithin_zero
-#check Continuous.deriv_integral
-#check circleIntegral.integral_sub_inv_of_mem_ball
-#check Complex.circleIntegral_eq_zero_of_differentiable_on_off_countable

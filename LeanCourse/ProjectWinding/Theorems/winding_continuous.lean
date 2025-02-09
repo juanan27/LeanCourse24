@@ -720,7 +720,7 @@ theorem ω_continuous (γ : closed_curve)
            rw [hI]
            exact closed_curve.ContOn γ
          }
-        · sorry
+        · sorry -- PLEASE, SEE (*) AT THE BOTTOM
         · sorry
 
       · intro x hx
@@ -811,3 +811,20 @@ theorem ω_continuous (γ : closed_curve)
     · positivity
     · sorry -- epsilon can always be taken smaller than 1.
 }
+
+/- (*) PLEASE, SEE THIS:
+We would like to show one of the weirdest errors we have got in the project:
+
+application type mismatch
+  ContinuousOn.sub haux hacon
+argument
+  hacon
+has type
+  ContinuousOn (fun x ↦ a) [[0, 1]] : Prop
+but is expected to have type
+  ContinuousOn (fun x ↦ a) [[0, 1]] : Prop
+
+This applies to both sorrys in (*). This only reinforces the idea we gave both in the presentation
+and the "winding_number.pdf" document of keep working on Mathlib, fixing bugs and refining the
+current content.
+-/

@@ -1,37 +1,24 @@
 import Mathlib.Data.Real.Basic
-import Mathlib.Analysis.Calculus.FDeriv.Basic
 import Mathlib.Analysis.Calculus.Deriv.Basic
 import Mathlib.Data.Complex.Basic
 import Mathlib.MeasureTheory.Integral.IntervalIntegral
-import Mathlib.Analysis.Calculus.FDeriv.Basic
 import Mathlib.Analysis.Normed.Field.Basic
 import Mathlib.Data.Finset.Basic
-import Mathlib.Analysis.Calculus.FDeriv.Mul
-import Mathlib.Analysis.Calculus.Deriv.Mul
-import Mathlib.Analysis.Calculus.Deriv.Add
 import Mathlib.Topology.Algebra.ConstMulAction
 import Mathlib.Analysis.Calculus.Deriv.Comp
 import Mathlib.Topology.ContinuousOn
 import Mathlib.Order.Interval.Basic
 import Mathlib.Topology.UnitInterval
-import Mathlib.Analysis.SpecialFunctions.Trigonometric.Deriv
 import Mathlib.Analysis.Calculus.Deriv.Prod
 import Mathlib.Analysis.Calculus.Deriv.Pow
-import Mathlib.Analysis.SpecialFunctions.Integrals
-import Mathlib.Analysis.Convolution
-import Mathlib.Data.Real.Irrational
 import Mathlib.Tactic
-import Mathlib.Analysis.Complex.CauchyIntegral
-import Mathlib.MeasureTheory.Function.Jacobian
 import Mathlib.Algebra.GroupWithZero.Basic
-import Mathlib.MeasureTheory.Measure.MeasureSpaceDef
-import Mathlib.MeasureTheory.Function.L1Space
 import LeanCourse.ProjectWinding.Definitions.curves
 
 
 open DifferentiableOn Finset
 open BigOperators Function Set Real Topology Filter
-open MeasureTheory Interval Convolution ENNReal
+open MeasureTheory Interval ENNReal
 --open scoped Real NNReal Interval Pointwise Topology
 open Complex MeasureTheory TopologicalSpace Metric Function Set Filter Asymptotics
 open Set unitInterval Finset Metric

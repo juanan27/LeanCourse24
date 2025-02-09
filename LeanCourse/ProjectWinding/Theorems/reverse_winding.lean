@@ -14,13 +14,6 @@ noncomputable section
 
 open Classical
 
-instance : NormedField ℝ := by exact normedField
-instance : NormedSpace ℝ ℂ := by exact NormedSpace.complexToReal
-instance : NormedAlgebra ℝ ℝ := by exact RCLike.toNormedAlgebra
-
-#check deriv.comp
-
-
 -- The following lemma is useful:
 
 lemma reverse_aux (γ : closed_curve) (t:ℝ) : deriv (γ.toFun ∘ fun t ↦ 1 - t) t = -deriv γ.toFun (1 - t) := by {
